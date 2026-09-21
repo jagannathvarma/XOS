@@ -105,8 +105,17 @@ h1{font-size:clamp(24px,4vw,34px);line-height:1.1;margin:0;letter-spacing:-.02em
 .ad td{padding:4px 8px}
 .ad button{border:0;background:none;color:var(--found);font:600 12.5px var(--font);cursor:pointer;padding:6px 4px}
 .hint{color:var(--ink3);font-size:12px;margin:10px 0 0;max-width:80ch}
-.cm{flex:none;font:600 11px var(--font);color:var(--found);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.cm,.tk{flex:none;width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;padding:0;text-decoration:none;cursor:pointer}
+.cm{color:var(--found);border:1px solid var(--line)}
 .cm:hover{background:var(--head)}
+.tk{border:1.5px solid var(--line);background:transparent;color:var(--ink3)}
+.tk:hover{border-color:var(--ok);color:var(--ok)}
+.tk.part{border-color:var(--ok);color:var(--ok)}
+.tk.on{background:var(--ok);border-color:var(--ok);color:#fff}
+:root[data-theme="dark"] .tk.on{color:#0B1118}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tk.on{color:#0B1118}}
+.tk:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.acts{display:flex;gap:6px;flex:none}
 .cm:focus-visible{outline:2px solid var(--found);outline-offset:2px}
 .bar.done{background:var(--ok)}
 .bar.late{outline:2px solid var(--bad);outline-offset:1px}
@@ -376,7 +385,7 @@ function build(){
     const alr=r.pal||r.al;
     const nm=has?`<button type="button" class="tog" data-id="${esc(key)}" aria-expanded="${op}" style="padding-left:${pad}px"><span class="chev">${op?'▼':'▶'}</span><span class="nm" style="${level?'color:var(--ink2);font-weight:400':''}">${esc(r.n)} <span style="color:var(--ink3);font-weight:400">${r.sub||'· '+c.length}</span><span class="pg">${pd}/${pt}</span>${alr?`<span class="al">⚠ ${esc(alr)}</span>`:''}${op&&r.chn?`<span class="ch">${esc(r.chn)}</span>`:''}</span></button>`
       :`<span class="nm" style="${leaf2?`padding-left:${pad}px;font-family:var(--mono);font-size:12px;color:var(--ink2);font-weight:400`:level?`padding-left:${pad}px;color:var(--ink2);font-weight:400`:''}">${esc(r.n)}${r.al?` <span class="al" title="${esc(r.al)}">⚠ ${esc(r.al)}</span>`:''}</span>`;
-    h+=`<div class="c lab"><span class="lh ${dn?'d':''}"><input type="checkbox" class="dn" data-reg="${ri}" ${dn?'checked':''} ${part?'data-part="1"':''} aria-label="Mark ${esc(r.n)} as done">${nm}</span><span class="own">${r.o.join(', ')}</span><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,fmt(cols[idx(r.s)].d),fmt(cols[idx(r.s+r.d-1)].d))}" aria-label="Comment on ${esc(r.n)}">Comment</a></div><div class="c tl">${bgc}${bar(r,level,has,op)}</div>`;
+    h+=`<div class="c lab"><span class="lh ${dn?'d':''}">${nm}</span><span class="own">${r.o.join(', ')}</span><span class="acts"><a class="cm" target="_blank" rel="noopener" title="Comment on this item" href="${issueUrl(r,curG,fmt(cols[idx(r.s)].d),fmt(cols[idx(r.s+r.d-1)].d))}" aria-label="Comment on ${esc(r.n)}">${IC}</a><button type="button" class="tk ${dn?'on':part?'part':''}" data-reg="${ri}" aria-pressed="${dn}" aria-label="Mark ${esc(r.n)} as done" title="${dn?'Done. Click to undo':'Mark as done'}">${IT}</button></span></div><div class="c tl">${bgc}${bar(r,level,has,op)}</div>`;
   };
   const walk=(r,level,pk)=>{
     const key=r.id||(pk?pk+'>':'')+r.n;row(r,level,key);
@@ -426,6 +435,8 @@ function load(){
 }
 $('start').onchange=()=>build();
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(build,150)});
+const IC='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H8l-5 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>';
+const IT='<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
 let curG='';
 const issueUrl=(r,g,st,en)=>'https://github.com/jagannathvarma/XOS/issues/new?title='+encodeURIComponent('Comment: '+r.n)+'&body='+encodeURIComponent('Activity: '+r.n+'\nGroup: '+g+'\nOwner(s): '+r.o.join(', ')+'\nPlanned: '+st+' to '+en+'\n\nMy comment:\n');
 const TYPES={F:'Foundational',I:'Independent',D:'Dependent',M:'Data migration'},DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
@@ -443,7 +454,7 @@ function stCls(r){return isDone(r)?'done':(endOf(r)<TODAY?'late':'')}
 function stTxt(r){const [d,t]=prog(r);return isDone(r)?'Done':(endOf(r)<TODAY?'Overdue':'Planned')+(t>1&&d>0?' ('+d+'/'+t+' done)':'')}
 function rowHtml(r,g,ri,k,num,dt){
   const a=`data-g="${g}" data-r="${ri}" data-k="${k}"`;
-  return `<tr class="${k>=0?'kid':''} ${isDone(r)?'isd':''}" data-key="${g}:${ri}:${k}"><td><input type="checkbox" class="dn" data-ld data-g="${g}" data-r="${ri}" data-k="${k}" ${isDone(r)?'checked':''} aria-label="Mark done"></td><td class="num">${num}</td>
+  return `<tr class="${k>=0?'kid':''} ${isDone(r)?'isd':''}" data-key="${g}:${ri}:${k}"><td><button type="button" class="tk ${isDone(r)?'on':''}" data-ld data-g="${g}" data-r="${ri}" data-k="${k}" aria-pressed="${isDone(r)}" aria-label="Mark done" title="${isDone(r)?'Done. Click to undo':'Mark as done'}">${IT}</button></td><td class="num">${num}</td>
 <td><input ${a} data-f="n" class="w-name" value="${esc(r.n)}" aria-label="Activity"></td>
 <td><input ${a} data-f="o" class="w-own" value="${esc(r.o.join(', '))}" aria-label="Owners"></td>
 <td><select ${a} data-f="t" aria-label="Type">${Object.entries(TYPES).map(([c,l])=>`<option value="${c}" ${r.t===c?'selected':''}>${l}</option>`).join('')}</select></td>
@@ -451,7 +462,7 @@ function rowHtml(r,g,ri,k,num,dt){
 <td><input type="number" min="1" ${a} data-f="d" class="w-num" value="${r.d}" aria-label="Days"></td>
 <td class="dt" data-c="s">${dt(r.s)}</td><td class="dt" data-c="e">${dt(r.s+r.d-1)}</td><td class="sts ${stCls(r)}" data-c="st">${stTxt(r)}</td>
 <td><input ${a} data-f="note" class="w-note" value="${esc(r.note||r.al||r.pal||'')}" aria-label="Notes"></td>
-<td><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,dt(r.s),dt(r.s+r.d-1))}">Comment</a></td>
+<td><a class="cm" target="_blank" rel="noopener" title="Comment on this item" href="${issueUrl(r,curG,dt(r.s),dt(r.s+r.d-1))}" aria-label="Comment on ${esc(r.n)}">${IC}</a></td>
 <td><button type="button" class="x" ${a} data-del aria-label="Delete row" title="Delete">×</button></td></tr>`;
 }
 function dtFn(){calcEnd();const wd=workDates(END);return i=>{const d=wd[i];return d?DN[d.getDay()]+' '+fmt(d):'-'}}
@@ -488,13 +499,14 @@ $('list').addEventListener('change',e=>{
 });
 $('list').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.ld!==undefined){const o=obj(+b.dataset.g,+b.dataset.r,+b.dataset.k);setDone(o,!isDone(o));markDirty();refresh();renderList();return;}
   if(b.dataset.add!==undefined){groups[+b.dataset.add].rows.push({n:'New task',o:['Jagannath'],s:0,d:1,t:'I'});refresh();renderList();markDirty();}
   else if('del' in b.dataset){const o=obj(+b.dataset.g,+b.dataset.r,+b.dataset.k);
     if(!confirm('Delete "'+o.n+'"'+(o.kids?' and its sub-items':'')+'?'))return;
     if(+b.dataset.k>=0)groups[+b.dataset.g].rows[+b.dataset.r].kids.splice(+b.dataset.k,1);else groups[+b.dataset.g].rows.splice(+b.dataset.r,1);
     refresh();renderList();markDirty();}
 });
-$('chart').addEventListener('change',e=>{const t=e.target;if(t.dataset.reg===undefined)return;setDone(REG[+t.dataset.reg],t.checked);markDirty();refresh();});
+$('chart').addEventListener('click',e=>{const b=e.target.closest('.tk');if(!b||b.dataset.reg===undefined)return;const o=REG[+b.dataset.reg];setDone(o,!isDone(o));markDirty();refresh();});
 function setView(v){
   $('vChart').hidden=v!=='chart';$('vList').hidden=v!=='list';
   $('tChart').setAttribute('aria-pressed',v==='chart');$('tList').setAttribute('aria-pressed',v==='list');
