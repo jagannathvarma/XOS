@@ -74,6 +74,36 @@ h1{font-size:clamp(24px,4vw,34px);line-height:1.1;margin:0;letter-spacing:-.02em
 .ddp .clr{margin-top:4px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink2);font:600 12.5px var(--font);padding:9px 8px 4px;text-align:left;cursor:pointer}
 .mine{font-size:13px;color:var(--ink2);min-height:19px}
 .mine b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.tabs{display:inline-flex;background:var(--head);border-radius:9px;padding:3px}
+.tabs button{font:600 13px var(--font);border:0;background:transparent;color:var(--ink2);padding:7px 14px;border-radius:7px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+.tabs button:focus-visible,.tb button:focus-visible,.tokrow button:focus-visible,.lt input:focus-visible,.lt select:focus-visible,.lt .x:focus-visible,.ad button:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.tb{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:12px}
+.tb button,.tokrow button{font:600 13px var(--font);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:8px;padding:8px 14px;cursor:pointer}
+.tb button.pri{background:var(--found);border-color:var(--found);color:#fff}
+:root[data-theme="dark"] .tb button.pri{color:#0B1118}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .tb button.pri{color:#0B1118}}
+.st{font-size:12.5px;color:var(--ink2)}
+.st.dirty{color:var(--mig);font-weight:600}
+.tokrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:12px;font-size:13px;color:var(--ink2)}
+.tokrow input{flex:1 1 280px;font:13px var(--mono);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.tw{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:auto;max-width:100%}
+.lt{border-collapse:collapse;width:100%;min-width:1080px;font-size:13px}
+.lt th{position:sticky;top:0;background:var(--head);text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.07em;color:var(--ink2);padding:9px 8px;white-space:nowrap}
+.lt td{border-top:1px solid var(--line);padding:4px 6px;vertical-align:middle}
+.lt td.num{font-family:var(--mono);color:var(--ink3);font-size:12px;white-space:nowrap}
+.lt td.dt{font-family:var(--mono);font-size:12px;color:var(--ink2);white-space:nowrap}
+.lt tr.gr td{background:var(--head);font-size:11px;text-transform:uppercase;letter-spacing:.09em;font-weight:600;color:var(--ink2);padding:7px 10px}
+.lt tr.kid td:nth-child(2) input{padding-left:20px;color:var(--ink2)}
+.lt input,.lt select{font:13px var(--font);background:transparent;color:var(--ink);border:1px solid transparent;border-radius:6px;padding:6px 7px;width:100%}
+.lt input:hover,.lt select:hover{border-color:var(--line)}
+.lt input:focus,.lt select:focus{background:var(--bg);border-color:var(--found)}
+.lt .w-name{min-width:260px}.lt .w-own{min-width:150px}.lt .w-note{min-width:260px}.lt .w-num{width:64px;font-family:var(--mono)}
+.lt .x{border:0;background:none;color:var(--ink3);font-size:18px;cursor:pointer;border-radius:6px;padding:2px 8px}
+.lt .x:hover{color:var(--mig)}
+.ad td{padding:4px 8px}
+.ad button{border:0;background:none;color:var(--found);font:600 12.5px var(--font);cursor:pointer;padding:6px 4px}
+.hint{color:var(--ink3);font-size:12px;margin:10px 0 0;max-width:80ch}
 .ctl{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:flex-end}
 .ch{display:block;font-size:11px;font-weight:400;color:var(--ink3);line-height:1.35;margin-top:2px;font-family:var(--mono)}
 .seg{display:inline-flex;background:var(--head);border-radius:9px;padding:3px}
@@ -99,6 +129,10 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
 
 <div class="wrap">
   <div class="who">
+    <div class="tabs" role="group" aria-label="View">
+      <button type="button" id="tChart" aria-pressed="true">Chart view</button>
+      <button type="button" id="tList" aria-pressed="false">List view</button>
+    </div>
     <div class="dd" id="dd">
       <button type="button" id="ddb" aria-haspopup="true" aria-expanded="false">View by person: <b id="ddl">All</b> <span aria-hidden="true">▾</span></button>
       <div class="ddp" id="ddp" hidden></div>
@@ -121,6 +155,7 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
     <span style="color:var(--mig)">⚠ Dependency alert</span>
   </div>
 
+  <div id="vChart">
   <div class="chart" id="chart" role="region" aria-label="Gantt chart" tabindex="0"></div>
 
   <div class="ctl">
@@ -131,6 +166,25 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
     <h2>Who is carrying what</h2>
     <div class="load" id="load"></div>
   </section>
+  </div>
+
+  <div id="vList" hidden>
+    <div class="tb">
+      <button type="button" class="pri" id="bSave">Save to GitHub</button>
+      <button type="button" id="bReload">Reload latest</button>
+      <button type="button" id="bCsv">Download CSV</button>
+      <button type="button" id="bReset">Reset to default</button>
+      <span class="st" id="st" aria-live="polite"></span>
+    </div>
+    <div class="tokrow" id="tokrow" hidden>
+      <label for="tok">GitHub token</label>
+      <input type="password" id="tok" placeholder="Fine-grained token, Contents: read and write on this repo only" autocomplete="off">
+      <button type="button" id="bTok">Use token</button>
+    </div>
+    <div class="tw"><table class="lt"><thead><tr><th>#</th><th>Activity</th><th>Owner(s)</th><th>Type</th><th>Start day</th><th>Days</th><th>Start</th><th>End</th><th>Notes</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
+    <p class="hint">Edits update the chart straight away. Nothing is shared until you press Save to GitHub, which commits plan.json for everyone. Owners are separated by commas; start day counts working days from the start date.</p>
+  </div>
+
 
   <section>
     <h2>How this plan was sequenced</h2>
@@ -147,7 +201,7 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
 
 <script>
 const T={F:'var(--found)',I:'var(--indep)',D:'var(--dep)',M:'var(--mig)'};
-const groups=[
+let groups=[
  {g:'Foundation',rows:[
   {n:'Security roles setup',o:['Jaideep'],s:0,d:2,t:'F',parent:1,agg:1,id:'roles',sub:'· 81 custom roles in 4 groups',kids:[
    {n:"Business development, sales and CRM",o:['Jaideep'],s:0,d:1,t:'F',ch:["BD_Head", "BD_MI", "BD_Manager", "BD_TL", "Sourcing_Head", "Sourcing_Manager", "Sourcing_TL", "Closing_Head", "Closing_Manager", "Closing_TL", "Sales_Head", "CRM_Head", "CRM_MIS_Manager", "CRM_MIS_TL", "CRM_RM", "CRM_Regional_Head", "CRM_TL", "Revenue_Head", "Revenue_Manager", "Revenue_TL", "Presales_Vertical_SPOC", "Channel_Partner_Vertical_SPOC", "Allocation_Manager", "Sitevisit_Manager", "Allocation Manager (Interim)", "SYT_SiteVisit_PublicForm"]},
@@ -245,7 +299,13 @@ const groups=[
    {n:"CRM app",o:['Vignesh'],s:6,d:3,t:'D',ch:["CRM Head", "CRM RM", "CRM MIS TL", "CRM Regional Head", "CRM TL", "CRM MIS Manager"]},
    {n:"Events app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Events TL", "Events Head", "Events Manager", "Events Vertical SPOC"]}]}]}
 ];
-const END=Math.max(...groups.flatMap(g=>g.rows.map(r=>r.s+r.d)));
+const NOTES={'Security roles setup':'Precise role setup per job profile, team setup, record sharing where required, then app-wise testing per job profile and fixing bugs. Excludes form-specific or on-approval RBAC.','Custom upload controls to blob path':'All custom HTML upload buttons and blob restructuring in ALM','Allocation app onboarding from team':'Onboarding mechanism of Allocation','Notification automations (BD, CRM, Tech Ops)':'BD, Sales, CRM, Strategy, Tech Ops','Approval automations (BD, CRM)':'Sales, CRM, Strategy','BD and Booking/Collection role controls':'Finance only does sign-up confirmation, RM assignment only by CRM TL, deviation approval only by Strategy','Masters incl. CP Master':'Timed as per POC in Dev','BD related':'Timed as per POC in Dev','Inventory':'Timed as per POC in Dev','Sourcing (2.5L+)':'Timed as per POC in Dev','Site Visit (1.35L+)':'Extrapolated from POC in Dev','Lead (1.2L+) and child tables':'Extrapolated from POC in Dev','Opportunity and child tables (26K+)':'Extrapolated from POC in Dev','Prospect (6L+, last)':'Extrapolated from POC in Dev'};
+(function ap(rs){rs.forEach(r=>{if(NOTES[r.n])r.note=NOTES[r.n];if(r.kids)ap(r.kids)})})(groups.flatMap(g=>g.rows));
+const DEFAULT=JSON.stringify(groups);
+let END=1;
+const calcEnd=()=>{END=Math.max(1,...groups.flatMap(g=>g.rows.flatMap(r=>[r,...(r.kids||[])])).map(r=>r.s+r.d))};
+calcEnd();
+const mineO=o=>selSet.size===0||o.some(x=>selSet.has(x));
 const openSet=new Set();const selSet=new Set();
 const $=id=>document.getElementById(id);
 const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DL='SMTWTFS';
@@ -261,6 +321,7 @@ function workDates(n){
   return out;
 }
 function build(){
+  calcEnd();
   const wd=workDates(END);
   const cols=[],map=[];
   for(let d=new Date(wd[0]);d<=wd[END-1];d.setDate(d.getDate()+1)){
@@ -336,9 +397,105 @@ function load(){
   const mx=Math.max(...Object.values(m));
   $('load').innerHTML=Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([p,v])=>`<div class="ld"><span>${p}</span><div class="t"><i style="width:${v/mx*100}%"></i></div><small>${v}d</small></div>`).join('');
 }
-$('start').onchange=build;
+$('start').onchange=()=>build();
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(build,150)});
-build();load();chips();
+const TYPES={F:'Foundational',I:'Independent',D:'Dependent',M:'Data migration'},DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const esc=x=>String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const obj=(g,r,k)=>{const R=groups[g].rows[r];return k>=0?R.kids[k]:R};
+let dirty=false;
+function setSt(t,d){const e=$('st');e.textContent=t;e.className='st'+(d?' dirty':'')}
+function markDirty(){dirty=true;setSt('Unsaved changes',true)}
+function rowHtml(r,g,ri,k,num,dt){
+  const a=`data-g="${g}" data-r="${ri}" data-k="${k}"`;
+  return `<tr class="${k>=0?'kid':''}" data-key="${g}:${ri}:${k}"><td class="num">${num}</td>
+<td><input ${a} data-f="n" class="w-name" value="${esc(r.n)}" aria-label="Activity"></td>
+<td><input ${a} data-f="o" class="w-own" value="${esc(r.o.join(', '))}" aria-label="Owners"></td>
+<td><select ${a} data-f="t" aria-label="Type">${Object.entries(TYPES).map(([c,l])=>`<option value="${c}" ${r.t===c?'selected':''}>${l}</option>`).join('')}</select></td>
+<td><input type="number" min="1" ${a} data-f="s" class="w-num" value="${r.s+1}" aria-label="Start day"></td>
+<td><input type="number" min="1" ${a} data-f="d" class="w-num" value="${r.d}" aria-label="Days"></td>
+<td class="dt" data-c="s">${dt(r.s)}</td><td class="dt" data-c="e">${dt(r.s+r.d-1)}</td>
+<td><input ${a} data-f="note" class="w-note" value="${esc(r.note||r.al||r.pal||'')}" aria-label="Notes"></td>
+<td><button type="button" class="x" ${a} data-del aria-label="Delete row" title="Delete">×</button></td></tr>`;
+}
+function dtFn(){calcEnd();const wd=workDates(END);return i=>{const d=wd[i];return d?DN[d.getDay()]+' '+fmt(d):'-'}}
+function renderList(){
+  const dt=dtFn();let h='',n=0;
+  groups.forEach((g,gi)=>{
+    const rows=g.rows.map((r,ri)=>({r,ri})).filter(x=>mineO(x.r.o)||(x.r.kids&&x.r.kids.some(k=>mineO(k.o))));
+    if(!rows.length)return;
+    h+=`<tr class="gr"><td colspan="10">${g.g}</td></tr>`;
+    rows.forEach(({r,ri})=>{n++;h+=rowHtml(r,gi,ri,-1,n,dt);
+      (r.kids||[]).forEach((k,ki)=>{if(mineO(k.o))h+=rowHtml(k,gi,ri,ki,n+'.'+(ki+1),dt)});});
+    h+=`<tr class="ad"><td colspan="10"><button type="button" data-add="${gi}">+ Add task to ${g.g}</button></td></tr>`;
+  });
+  $('list').innerHTML=h||'<tr><td colspan="10" style="padding:16px">No items for the selected people.</td></tr>';
+}
+function updateDates(){
+  const dt=dtFn();
+  $('list').querySelectorAll('tr[data-key]').forEach(tr=>{const [g,r,k]=tr.dataset.key.split(':').map(Number);const o=obj(g,r,k);
+    tr.querySelector('[data-c=s]').textContent=dt(o.s);tr.querySelector('[data-c=e]').textContent=dt(o.s+o.d-1)});
+}
+function refresh(){calcEnd();build();load();chips();}
+$('list').addEventListener('input',e=>{
+  const t=e.target;if(!t.dataset.f)return;const o=obj(+t.dataset.g,+t.dataset.r,+t.dataset.k),f=t.dataset.f,v=t.value;
+  if(f==='n')o.n=v;else if(f==='o')o.o=v.split(',').map(x=>x.trim()).filter(Boolean);else if(f==='t')o.t=v;
+  else if(f==='s')o.s=Math.max(0,(parseInt(v)||1)-1);else if(f==='d')o.d=Math.max(1,parseInt(v)||1);else if(f==='note')o.note=v;
+  markDirty();
+});
+$('list').addEventListener('change',e=>{if(e.target.dataset.f){refresh();updateDates();}});
+$('list').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;
+  if(b.dataset.add!==undefined){groups[+b.dataset.add].rows.push({n:'New task',o:['Jagannath'],s:0,d:1,t:'I'});refresh();renderList();markDirty();}
+  else if('del' in b.dataset){const o=obj(+b.dataset.g,+b.dataset.r,+b.dataset.k);
+    if(!confirm('Delete "'+o.n+'"'+(o.kids?' and its sub-items':'')+'?'))return;
+    if(+b.dataset.k>=0)groups[+b.dataset.g].rows[+b.dataset.r].kids.splice(+b.dataset.k,1);else groups[+b.dataset.g].rows.splice(+b.dataset.r,1);
+    refresh();renderList();markDirty();}
+});
+function setView(v){
+  $('vChart').hidden=v!=='chart';$('vList').hidden=v!=='list';
+  $('tChart').setAttribute('aria-pressed',v==='chart');$('tList').setAttribute('aria-pressed',v==='list');
+  if(v==='list')renderList();
+}
+$('tChart').onclick=()=>setView('chart');$('tList').onclick=()=>setView('list');
+const _chips=chips;chips=function(){_chips();if(!$('vList').hidden)renderList();};
+const REPO='jagannathvarma/XOS',FILE='plan.json',API='https://api.github.com/repos/'+REPO+'/contents/'+FILE;
+const getTok=()=>{try{return localStorage.getItem('xos_gh_token')||''}catch(e){return ''}};
+const planJson=()=>JSON.stringify({v:1,start:$('start').value,groups},null,1);
+function applyPlan(p){if(!p||!Array.isArray(p.groups))throw new Error('bad plan');groups=p.groups;if(p.start)$('start').value=p.start;refresh();if(!$('vList').hidden)renderList();}
+async function loadRemote(){
+  try{const r=await fetch(API,{headers:{Accept:'application/vnd.github.raw+json'},cache:'no-store'});
+    if(r.ok){applyPlan(await r.json());dirty=false;setSt('Loaded the latest saved plan from GitHub',false);}
+    else if(r.status===404)setSt('No saved plan yet, showing the default',false);
+    else setSt('Could not load the saved plan (HTTP '+r.status+'), showing the default',false);}
+  catch(e){setSt('Could not reach GitHub, showing the default',false);}
+}
+async function saveRemote(){
+  const t=getTok();
+  if(!t){$('tokrow').hidden=false;$('tok').focus();setSt('Paste a GitHub token to save',true);return;}
+  setSt('Saving...',false);
+  const H={Authorization:'Bearer '+t,Accept:'application/vnd.github+json'};
+  try{
+    let sha;const g=await fetch(API+'?ref=main',{headers:H,cache:'no-store'});
+    if(g.ok)sha=(await g.json()).sha;else if(g.status!==404){throw new Error(g.status===401||g.status===403?'Token rejected. Check it has Contents: read and write on this repo.':'HTTP '+g.status);}
+    const body={message:'Update plan from the tracker',content:btoa(unescape(encodeURIComponent(planJson()))),branch:'main'};if(sha)body.sha=sha;
+    const r=await fetch(API,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(!r.ok)throw new Error(r.status===401||r.status===403?'Token rejected. Check it has Contents: read and write on this repo.':'Save failed (HTTP '+r.status+')');
+    dirty=false;setSt('Saved. Everyone sees this plan after a refresh.',false);
+  }catch(e){setSt(e.message||'Save failed',true);}
+}
+$('bSave').onclick=saveRemote;
+$('bReload').onclick=()=>{if(dirty&&!confirm('Discard your unsaved edits and load the last saved plan?'))return;loadRemote();};
+$('bReset').onclick=()=>{if(!confirm('Reset every row to the original default plan? Unsaved edits are lost.'))return;groups=JSON.parse(DEFAULT);$('start').value='2026-09-21';refresh();renderList();markDirty();};
+$('bTok').onclick=()=>{const v=$('tok').value.trim();if(!v)return;try{localStorage.setItem('xos_gh_token',v)}catch(e){}$('tok').value='';$('tokrow').hidden=true;saveRemote();};
+$('bCsv').onclick=()=>{
+  const dt=dtFn();const q=x=>'"'+String(x).replace(/"/g,'""')+'"';
+  const rows=[['Group','Activity','Owners','Type','Start day','Days','Start','End','Notes']];
+  groups.forEach(g=>g.rows.forEach(r=>[r,...(r.kids||[]).map(k=>({...k,sub:1}))].forEach(x=>rows.push([g.g,(x.sub?'   ':'')+x.n,x.o.join(', '),TYPES[x.t],x.s+1,x.d,dt(x.s),dt(x.s+x.d-1),x.note||x.al||x.pal||'']))));
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([rows.map(r=>r.map(q).join(',')).join('\n')],{type:'text/csv'}));a.download='go-live-plan.csv';a.click();
+};
+addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
+$('start').addEventListener('change',()=>{if(!$('vList').hidden)updateDates();markDirty();});
+build();load();chips();loadRemote();
 </script>
 
 </body>
