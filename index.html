@@ -213,18 +213,6 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
   </div>
 
 
-  <section>
-    <h2>How this plan was sequenced</h2>
-    <ul class="notes">
-      <li>Durations are the working-day estimates from the readiness sheet. Each person works one task at a time; independent items run in parallel across owners.</li>
-      <li>Security roles (81 custom roles, taken from the org's unmanaged roles) run first over 2 days in four groups, then app-wise configuration and testing per job profile over 2 days across the 22 custom apps (xr_ prefix). Click any row to expand. Child tables for Lead and Opportunity are the xr_ tables with a lookup to them, read from the org.</li>
-      <li>Sanskar's automation flows (46 in total) are grouped as listed by the team and are spread in proportion to flow count over 7 working days (one more than the sheet): notifications 3 days (19 flows), source protection 1 day, approvals 2 days (18 flows) and Chanakya 1 day (8 flows), with the flows dealt out evenly across each item's days. Every email flow logs its action in the xr_email table.</li>
-      <li>Migration items are owned by Jagannath, Sanskar, Pratham and Vignesh (BD also Supriya). Each table under Sourcing (Launch CP child tables), Lead and Opportunity has its own 1-day data mapping and migration to xi dev step, four per day across the four owners. That makes the plan 21 working days instead of 13. Inventory lists Project and Launch with their child tables for reference.</li>
-      <li>Blob upload controls also start first. Edge-case testing follows the build items; user manuals follow the dashboards.</li>
-      <li>Data migration starts Mon 21 Sep with Site Visit mapping and xi dev migration, in progress today with Pratham (its Lead and Prospect lookups are filled after those tables load). Then Masters, BD, Inventory, Sourcing, Lead, Opportunity, with Chanakya tables standalone after Inventory. Prospect runs last (6L+ rows, estimated 3 days, up from 2 for 5L), so its lookups from Lead and Visit are filled in afterwards. Closing Manager feedback follows Lead. Click the row to expand.</li>
-      <li>Dependency alerts: dashboards need the KPI definitions finalised; the BD migration needs billing schedule and agreement data for all projects.</li>
-    </ul>
-  </section>
 </div>
 
 <script>
