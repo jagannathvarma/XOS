@@ -208,6 +208,7 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
       <li>Durations are the working-day estimates from the readiness sheet. Each person works one task at a time; independent items run in parallel across owners.</li>
       <li>Security roles (81 custom roles, taken from the org's unmanaged roles) run first over 2 days in four groups, then app-wise configuration and testing per job profile over 2 days across the 22 custom apps (xr_ prefix). Click any row to expand. Child tables for Lead and Opportunity are the xr_ tables with a lookup to them, read from the org.</li>
       <li>Sanskar's automation flows (46 in total) are grouped as listed by the team and sit inside the sheet's original durations (notifications 1 day, approvals 2 days, Chanakya 2 days). Every email flow logs its action in the xr_email table. 19 notification flows in 1 day is tight and may need more time.</li>
+      <li>Migration items are owned by Jagannath, Sanskar, Pratham and Vignesh (BD also Supriya). Each table under Sourcing (Launch CP child tables), Lead and Opportunity has its own 1-day data mapping and migration to xi dev step, four per day across the four owners. That makes the plan 21 working days instead of 13. Inventory lists Project and Launch with their child tables for reference.</li>
       <li>Blob upload controls also start first. Edge-case testing follows the build items; user manuals follow the dashboards.</li>
       <li>Data migration starts Tue 22 Sep: Masters, BD, Inventory, Sourcing, Lead, Site Visit, Opportunity, with Chanakya tables standalone after Inventory. Lead moved ahead of Site Visit because the visit table looks up the lead. Prospect runs last (6L+ rows, estimated 3 days, up from 2 for 5L), so its lookups from Lead and Visit are filled in afterwards. Closing Manager feedback follows Lead. Click the row to expand.</li>
       <li>Dependency alerts: dashboards need the KPI definitions finalised; the BD migration needs billing schedule and agreement data for all projects.</li>
@@ -269,17 +270,7 @@ let groups=[
   {n:'BD and Booking/Collection role controls',o:['Jaideep'],s:5,d:2,t:'I'},
   {n:'Dashboards for all roles',o:['Abhijit','Yash','Vignesh'],s:0,d:3,t:'I',al:'Needs KPI definitions finalised'}]},
  {g:'Data migration (starts Tue 22 Sep)',rows:[
-  {n:'Data migration',o:['Jagannath','Pratham'],s:1,d:12,t:'M',parent:1,id:'mig',sub:'· 10 workstreams',pal:'BD: needs billing schedule and agreement data for all projects',kids:[
-   {n:'Masters incl. CP Master',o:['Jagannath','Pratham'],s:1,d:1,t:'M'},
-   {n:'BD related',o:['Supriya','Jagannath'],al:'Needs billing schedule and agreement data for all projects',s:2,d:1,t:'M'},
-   {n:'Inventory',o:['Jagannath','Pratham'],s:3,d:2,t:'M'},
-   {n:'Chanakya tables (standalone, after Inventory)',o:['Jagannath','Pratham'],s:6,d:2,t:'M'},
-   {n:'Sourcing (2.5L+)',o:['Jagannath','Pratham'],s:6,d:2,t:'M'},
-   {n:'Lead (1.2L+) and child tables',o:['Jagannath','Pratham'],s:8,d:1,t:'M',ch:["xr_applicant", "xr_b2cactivity", "xr_quotation", "xr_sitevisitsteplog", "xr_task"],chn:'Child tables (Visit, Opportunity and Closing Manager feedback are own rows):'},
-   {n:'Site Visit (1.35L+)',o:['Jagannath','Pratham'],s:9,d:1,t:'M'},
-   {n:'Opportunity and child tables (26K+)',o:['Jagannath','Pratham'],s:10,d:3,t:'M',ch:["xr_opportunityapplicant", "xr_bdactivity", "xr_bookingteamdetail", "xr_cancellationlog", "xr_collectionfeedback", "xr_collectionlog", "xr_collectionschedule", "xr_costsheet", "xr_hla", "xr_phonecall", "xr_quotationmilestone", "xr_rectificationimpact","xr_eoiprrmaster (EOI / PRR)"],chn:'Child tables (Applicant, B2C activity, Task shared with Lead):'},
-   {n:'Closing Manager feedback (1.15L+)',o:['Jagannath','Pratham'],s:9,d:1,t:'M'},
-   {n:'Prospect (6L+, last)',o:['Jagannath','Pratham'],s:10,d:3,t:'M'}]}]},
+  {n:'Data migration',o:['Jagannath','Sanskar','Pratham','Vignesh'],s:1,d:20,t:'M',parent:1,id:'mig',sub:'· 10 workstreams',pal:'BD: needs billing schedule and agreement data for all projects',kids:[{"n": "Masters incl. CP Master", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 1, "d": 1, "t": "M"}, {"n": "BD related", "o": ["Supriya", "Jagannath", "Sanskar", "Pratham", "Vignesh"], "al": "Needs billing schedule and agreement data for all projects", "s": 2, "d": 1, "t": "M"}, {"n": "Inventory", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 3, "d": 2, "t": "M", "ch": [{"n": "Project (xr_project)", "ch": ["xr_appconfigvalue", "xr_applicationsequence", "xr_b2cactivity", "xr_band", "xr_bdactivity", "xr_bddope", "xr_bdpotentialproject", "xr_bdserviceagreement", "xr_billing", "xr_block", "xr_brokerageladder", "xr_budgetoperation", "xr_budgetrequisition", "xr_cancellationlog", "xr_cppayout", "xr_eoiprrmaster", "xr_expenseadjustment", "xr_hla", "xr_integrationsetup", "xr_jbpform", "xr_launch", "xr_launchbudget", "xr_launchcp", "xr_launchteammember", "xr_lead", "xr_loyalty", "xr_offer", "xr_opportunity", "xr_paymentschedule", "xr_phonecall", "xr_pricingscenario", "xr_projectamenity", "xr_projectbankdetail", "xr_projectbudget", "xr_projectteammember", "xr_prospect", "xr_prospectassignmentorder", "xr_quotation", "xr_revenue", "xr_sitevisitstep", "xr_teamonboarding", "xr_typology", "xr_unit", "xr_unitrate", "xr_vdnbloyalty", "xr_vendorevaluation", "xr_vendorprojectfinancials", "xr_visit", "xr_visitvenuelocality", "xr_whatsappmessage"]}, {"n": "Launch (xr_launch)", "ch": ["xr_appconfigvalue", "xr_b2cactivity", "xr_bdactivity", "xr_block", "xr_budgetoperation", "xr_budgetrequisition", "xr_cancellationlog", "xr_collateral", "xr_documenttemplate", "xr_documenttemplatelaunch", "xr_expenseadjustment", "xr_hla", "xr_jbpform", "xr_launchbudget", "xr_launchcp", "xr_launchlifecycle", "xr_launchteammember", "xr_lead", "xr_loyalty", "xr_offer", "xr_opportunity", "xr_pricingscenario", "xr_prospect", "xr_prospectassignmentorder", "xr_quotation", "xr_scenarioresult", "xr_scenariotimeline", "xr_sitevisitratelimitlog", "xr_sitevisitstep", "xr_teamonboarding", "xr_vdnbloyalty", "xr_vendorevaluation", "xr_visit", "xr_visitvenuelocality"]}]}, {"n": "Chanakya tables (standalone, after Inventory)", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 6, "d": 2, "t": "M"}, {"n": "Sourcing (2.5L+): Channel Partner, Launch CP and child tables", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 6, "d": 4, "t": "M", "chn": "Launch CP child tables. Lead, Opportunity, Prospect and Visit also look up Launch CP but migrate in their own steps.", "ch": [{"n": "Channel Partner and Launch CP tables (original estimate)", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 6, "d": 2, "own": true}, {"n": "xr_awakening \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 8, "d": 1, "own": true}, {"n": "xr_cpbucket \u00b7 data mapping and migration to xi dev", "o": ["Sanskar"], "s": 8, "d": 1, "own": true}, {"n": "xr_cpmeeting \u00b7 data mapping and migration to xi dev", "o": ["Pratham"], "s": 8, "d": 1, "own": true}, {"n": "xr_eventconfirmation \u00b7 data mapping and migration to xi dev", "o": ["Vignesh"], "s": 8, "d": 1, "own": true}, {"n": "xr_handshake \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 9, "d": 1, "own": true}, {"n": "xr_jbpform \u00b7 data mapping and migration to xi dev", "o": ["Sanskar"], "s": 9, "d": 1, "own": true}, {"n": "xr_phonecall \u00b7 data mapping and migration to xi dev", "o": ["Pratham"], "s": 9, "d": 1, "own": true}]}, {"n": "Lead (1.2L+) and child tables", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 10, "d": 3, "t": "M", "chn": "Visit, Opportunity and Closing Manager feedback are separate steps.", "ch": [{"n": "xr_lead \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 10, "d": 1, "own": true}, {"n": "xr_applicant \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 11, "d": 1, "own": true}, {"n": "xr_b2cactivity \u00b7 data mapping and migration to xi dev", "o": ["Sanskar"], "s": 11, "d": 1, "own": true}, {"n": "xr_quotation \u00b7 data mapping and migration to xi dev", "o": ["Pratham"], "s": 11, "d": 1, "own": true}, {"n": "xr_sitevisitsteplog \u00b7 data mapping and migration to xi dev", "o": ["Vignesh"], "s": 11, "d": 1, "own": true}, {"n": "xr_task \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 12, "d": 1, "own": true}]}, {"n": "Site Visit (1.35L+)", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 13, "d": 1, "t": "M"}, {"n": "Closing Manager feedback (1.15L+)", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 13, "d": 1, "t": "M"}, {"n": "Opportunity and child tables (26K+)", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 14, "d": 4, "t": "M", "chn": "Applicant, B2C activity and Task are with Lead; Phone call is with Sourcing.", "ch": [{"n": "xr_opportunity \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 14, "d": 1, "own": true}, {"n": "xr_opportunityapplicant \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 15, "d": 1, "own": true}, {"n": "xr_bdactivity \u00b7 data mapping and migration to xi dev", "o": ["Sanskar"], "s": 15, "d": 1, "own": true}, {"n": "xr_bookingteamdetail \u00b7 data mapping and migration to xi dev", "o": ["Pratham"], "s": 15, "d": 1, "own": true}, {"n": "xr_cancellationlog \u00b7 data mapping and migration to xi dev", "o": ["Vignesh"], "s": 15, "d": 1, "own": true}, {"n": "xr_collectionfeedback \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 16, "d": 1, "own": true}, {"n": "xr_collectionlog \u00b7 data mapping and migration to xi dev", "o": ["Sanskar"], "s": 16, "d": 1, "own": true}, {"n": "xr_collectionschedule \u00b7 data mapping and migration to xi dev", "o": ["Pratham"], "s": 16, "d": 1, "own": true}, {"n": "xr_costsheet \u00b7 data mapping and migration to xi dev", "o": ["Vignesh"], "s": 16, "d": 1, "own": true}, {"n": "xr_hla \u00b7 data mapping and migration to xi dev", "o": ["Jagannath"], "s": 17, "d": 1, "own": true}, {"n": "xr_quotationmilestone \u00b7 data mapping and migration to xi dev", "o": ["Sanskar"], "s": 17, "d": 1, "own": true}, {"n": "xr_rectificationimpact \u00b7 data mapping and migration to xi dev", "o": ["Pratham"], "s": 17, "d": 1, "own": true}, {"n": "xr_eoiprrmaster (EOI / PRR) \u00b7 data mapping and migration to xi dev", "o": ["Vignesh"], "s": 17, "d": 1, "own": true}]}, {"n": "Prospect (6L+, last)", "o": ["Jagannath", "Sanskar", "Pratham", "Vignesh"], "s": 18, "d": 3, "t": "M"}]}]},
  {g:'Integrate and test',rows:[
   {n:'External integrations',o:['Vignesh','Pratham'],s:3,d:3,t:'D',parent:1,id:'integ',sub:'· 6 integrations',kids:[
    {n:"LSQ",o:['Vignesh','Pratham'],s:3,d:1,t:'D',ch:["LSQ to XOS \u00b7 Digital Web Leads \u00b7 push all digital web leads to XOS through the XOS Prospect API", "LSQ to XOS \u00b7 Pre-Sales Activity \u00b7 push Pre-Sales Activity details to XOS", "XOS to LSQ \u00b7 Site Visit \u00b7 push Site Visit details to LSQ and create a Sales Opportunity", "XOS to LSQ \u00b7 Revisit Update \u00b7 push Revisit details and updates to LSQ", "XOS to LSQ \u00b7 Closing Manager Feedback \u00b7 push Closing Manager feedback to LSQ", "XOS to LSQ \u00b7 Booking Date \u00b7 push the Booking Date to LSQ"]},
@@ -315,32 +306,27 @@ let groups=[
    {n:"CRM app",o:['Vignesh'],s:6,d:3,t:'D',ch:["CRM Head", "CRM RM", "CRM MIS TL", "CRM Regional Head", "CRM TL", "CRM MIS Manager"]},
    {n:"Events app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Events TL", "Events Head", "Events Manager", "Events Vertical SPOC"]}]}]}
 ];
+const inC=(a,n)=>(a||[]).includes(n);
+const chl=n=>n.kids||n.ch||[];
+function normNode(n,par,inherit){
+  if(par){if(!n.o)n.o=par.o;if(!n.t)n.t=par.t;if(inherit&&!n.own){n.s=par.s;n.d=par.d}}
+  if(n.ch){n.ch=n.ch.map(x=>typeof x==='string'?{n:x,done:inC(n.chd,x)}:x);delete n.chd}
+  (n.kids||[]).forEach(k=>normNode(k,n,false));
+  (n.ch||[]).forEach(c=>normNode(c,n,true));
+}
+function normAll(){groups.forEach(g=>g.rows.forEach(r=>normNode(r,null,false)))}
 const NOTES={'Security roles setup':'Precise role setup per job profile, team setup, record sharing where required, then app-wise testing per job profile and fixing bugs. Excludes form-specific or on-approval RBAC.','Custom upload controls to blob path':'All custom HTML upload buttons and blob restructuring in ALM','Allocation app onboarding from team':'Onboarding mechanism of Allocation','Notification automations (BD, CRM, Tech Ops)':'BD, Sales, CRM, Strategy, Tech Ops','Approval automations (BD, CRM)':'Sales, CRM, Strategy','BD and Booking/Collection role controls':'Finance only does sign-up confirmation, RM assignment only by CRM TL, deviation approval only by Strategy','Masters incl. CP Master':'Timed as per POC in Dev','BD related':'Timed as per POC in Dev','Inventory':'Timed as per POC in Dev','Sourcing (2.5L+)':'Timed as per POC in Dev','Site Visit (1.35L+)':'Extrapolated from POC in Dev','Lead (1.2L+) and child tables':'Extrapolated from POC in Dev','Opportunity and child tables (26K+)':'Extrapolated from POC in Dev','Prospect (6L+, last)':'Extrapolated from POC in Dev'};
 (function ap(rs){rs.forEach(r=>{if(NOTES[r.n])r.note=NOTES[r.n];if(r.kids)ap(r.kids)})})(groups.flatMap(g=>g.rows));
+normAll();
 const DEFAULT=JSON.stringify(groups);
-const inC=(a,n)=>(a||[]).includes(n);
-function isDone(r){
-  if(r._leaf)return inC(r._leaf.chd,r.n);
-  if(r.kids&&r.kids.length)return r.kids.every(isDone);
-  if(r.ch&&r.ch.length)return r.ch.every(c=>inC(r.chd,c));
-  return !!r.done;
-}
-function setDone(r,v){
-  if(r._leaf){const a=r._leaf.chd=r._leaf.chd||[],i=a.indexOf(r.n);if(v&&i<0)a.push(r.n);if(!v&&i>=0)a.splice(i,1);return}
-  if(r.kids&&r.kids.length){r.kids.forEach(k=>setDone(k,v));return}
-  if(r.ch&&r.ch.length){r.chd=v?[...r.ch]:[];return}
-  r.done=v;
-}
-function prog(r){
-  if(r._leaf)return[isDone(r)?1:0,1];
-  if(r.kids&&r.kids.length)return r.kids.reduce((a,k)=>{const q=prog(k);return[a[0]+q[0],a[1]+q[1]]},[0,0]);
-  if(r.ch&&r.ch.length)return[r.ch.filter(c=>inC(r.chd,c)).length,r.ch.length];
-  return[r.done?1:0,1];
-}
+function isDone(r){const c=chl(r);return c.length?c.every(isDone):!!r.done}
+function setDone(r,v){const c=chl(r);if(c.length)c.forEach(x=>setDone(x,v));else r.done=v}
+function prog(r){const c=chl(r);return c.length?c.reduce((a,k)=>{const q=prog(k);return[a[0]+q[0],a[1]+q[1]]},[0,0]):[r.done?1:0,1]}
 const TODAY=new Date();TODAY.setHours(0,0,0,0);
 const REG=[];
 let END=1;
-const calcEnd=()=>{END=Math.max(1,...groups.flatMap(g=>g.rows.flatMap(r=>[r,...(r.kids||[])])).map(r=>r.s+r.d))};
+const allN=n=>[n,...chl(n).flatMap(allN)];
+const calcEnd=()=>{END=Math.max(1,...groups.flatMap(g=>g.rows.flatMap(allN)).map(r=>r.s+r.d))};
 calcEnd();
 const mineO=o=>selSet.size===0||o.some(x=>selSet.has(x));
 const openSet=new Set();const selSet=new Set();
@@ -377,35 +363,38 @@ function build(){
   const dy=`<div class="dy" style="grid-template-columns:${tpl}">`+cols.map(c=>`<span>${DL[c.d.getDay()]}<br>${c.d.getDate()}</span>`).join('')+'</div>';
   h+=`<div class="c hd lab">Activity · owner</div><div class="c hd">${wk}${dy}</div>`;
   const bgc=`<div class="bg" style="grid-template-columns:${tpl}">`+cols.map(c=>`<span></span>`).join('')+'</div>';
-  const bar=(r)=>{
-    const a=idx(r.s),b=idx(r.s+r.d-1),op=openSet.has(r.id);
-    const left=a*cw+2,w=(b-a+1)*cw-4;
-    const dn=isDone(r),late=!dn&&cols[b].d<TODAY;
-    return `<div class="bar ${r.parent&&!op?'sum':''} ${dn?'done':''} ${late?'late':''}" style="left:${left}px;width:${w}px;--k:${T[r.t]}" title="${r.n}: ${r.d} working days, ${fmt(cols[a].d)} to ${fmt(cols[b].d)}${dn?' (done)':late?' (overdue)':''}">${(r.parent&&!op)?'':(dn?'✓ ':'')+r.d+'d'}</div>`;
-  };
-  const bar2=r=>{const a=idx(r.s),b=idx(r.s+r.d-1);const dn=isDone(r),late=!dn&&cols[b].d<TODAY;return `<div class="bar sum ${dn?'done':''} ${late?'late':''}" style="left:${a*cw+2}px;width:${(b-a+1)*cw-4}px;--k:${T[r.t]};opacity:${dn?1:.55}"></div>`};
-  const row=(r,sub)=>{
-    const op=openSet.has(r.id);
-    const ri=REG.push(r)-1,dn=isDone(r),[pd,pt]=prog(r),part=!dn&&pd>0&&pt>1;
-    let nm=r.parent?`<button type="button" class="tog" data-id="${r.id}" aria-expanded="${op}"><span class="chev">${op?'▼':'▶'}</span><span class="nm">${r.n} <span style="color:var(--ink3);font-weight:400">${r.sub}</span><span class="pg">${pd}/${pt}</span>${r.pal?`<span class="al">⚠ ${r.pal}</span>`:''}</span></button>`
-      :r.ch?`<button type="button" class="tog" data-id="${r.n}" aria-expanded="${openSet.has(r.n)}" style="padding-left:18px"><span class="chev">${openSet.has(r.n)?'▼':'▶'}</span><span class="nm" style="color:var(--ink2);font-weight:400">${r.n} <span style="color:var(--ink3)">· ${r.ch.length}</span><span class="pg">${pd}/${pt}</span>${r.al?`<span class="al">⚠ ${r.al}</span>`:''}${openSet.has(r.n)&&r.chn?`<span class="ch">${r.chn}</span>`:''}</span></button>`
-      :`<span class="nm" style="${sub==2?'padding-left:48px;font-family:var(--mono);font-size:12px;color:var(--ink2);font-weight:400':sub?'padding-left:18px;color:var(--ink2);font-weight:400':''}">${r.n}${r.al?` <span class="al" title="${r.al}">⚠ ${r.al}</span>`:''}</span>`;
-    h+=`<div class="c lab"><span class="lh ${dn?'d':''}"><input type="checkbox" class="dn" data-reg="${ri}" ${dn?'checked':''} ${part?'data-part="1"':''} aria-label="Mark ${esc(r.n)} as done">${nm}</span><span class="own">${r.o.join(', ')}</span><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,fmt(cols[idx(r.s)].d),fmt(cols[idx(r.s+r.d-1)].d))}" aria-label="Comment on ${esc(r.n)}">Comment</a></div><div class="c tl">${bgc}${sub==2?bar2(r):bar(r)}</div>`;
-  };
   const mine=o=>selSet.size===0||o.some(x=>selSet.has(x));
+  const bar=(r,level,has,op)=>{
+    const a=idx(r.s),b=idx(r.s+r.d-1),inh=level>=2&&!r.own,sum=(level===0&&has&&!op)||inh;
+    const left=a*cw+2,w=(b-a+1)*cw-4,dn=isDone(r),late=!dn&&cols[b].d<TODAY;
+    return `<div class="bar ${sum?'sum':''} ${dn?'done':''} ${late?'late':''}" style="left:${left}px;width:${w}px;--k:${T[r.t]};${inh&&!dn?'opacity:.55':''}" title="${esc(r.n)}: ${r.d} working days, ${fmt(cols[a].d)} to ${fmt(cols[b].d)}${dn?' (done)':late?' (overdue)':''}">${sum?'':(dn?'✓ ':'')+r.d+'d'}</div>`;
+  };
+  const row=(r,level,key)=>{
+    const c=chl(r),has=c.length>0,op=openSet.has(key);
+    const ri=REG.push(r)-1,dn=isDone(r),[pd,pt]=prog(r),part=!dn&&pd>0&&pt>1;
+    const pad=level*18,leaf2=level>=2;
+    const alr=r.pal||r.al;
+    const nm=has?`<button type="button" class="tog" data-id="${esc(key)}" aria-expanded="${op}" style="padding-left:${pad}px"><span class="chev">${op?'▼':'▶'}</span><span class="nm" style="${level?'color:var(--ink2);font-weight:400':''}">${esc(r.n)} <span style="color:var(--ink3);font-weight:400">${r.sub||'· '+c.length}</span><span class="pg">${pd}/${pt}</span>${alr?`<span class="al">⚠ ${esc(alr)}</span>`:''}${op&&r.chn?`<span class="ch">${esc(r.chn)}</span>`:''}</span></button>`
+      :`<span class="nm" style="${leaf2?`padding-left:${pad}px;font-family:var(--mono);font-size:12px;color:var(--ink2);font-weight:400`:level?`padding-left:${pad}px;color:var(--ink2);font-weight:400`:''}">${esc(r.n)}${r.al?` <span class="al" title="${esc(r.al)}">⚠ ${esc(r.al)}</span>`:''}</span>`;
+    h+=`<div class="c lab"><span class="lh ${dn?'d':''}"><input type="checkbox" class="dn" data-reg="${ri}" ${dn?'checked':''} ${part?'data-part="1"':''} aria-label="Mark ${esc(r.n)} as done">${nm}</span><span class="own">${r.o.join(', ')}</span><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,fmt(cols[idx(r.s)].d),fmt(cols[idx(r.s+r.d-1)].d))}" aria-label="Comment on ${esc(r.n)}">Comment</a></div><div class="c tl">${bgc}${bar(r,level,has,op)}</div>`;
+  };
+  const walk=(r,level,pk)=>{
+    const key=r.id||(pk?pk+'>':'')+r.n;row(r,level,key);
+    const c=chl(r);if(c.length&&openSet.has(key))c.filter(k=>mine(k.o)).forEach(k=>walk(k,level+1,key));
+  };
   groups.forEach(g=>{
-    const rows=g.rows.filter(r=>mine(r.o)||(r.kids&&r.kids.some(k=>mine(k.o))));
+    const rows=g.rows.filter(r=>mine(r.o)||chl(r).some(k=>mine(k.o)));
     if(!rows.length)return;
     curG=g.g;
     h+=`<div class="c lab grp">${g.g}</div><div class="c tl grp">${bgc}</div>`;
-    rows.forEach(r=>{row(r,0);if(r.parent&&openSet.has(r.id))r.kids.filter(k=>mine(k.o)).forEach(k=>{row(k,1);if(k.ch&&openSet.has(k.n))k.ch.forEach(c=>row({n:c,o:k.o,s:k.s,d:k.d,t:k.t,_leaf:k},2));});});
+    rows.forEach(r=>walk(r,0,''));
   });
   const e=idx(END-1);
   h+=`<div class="c lab" style="font-weight:700">Go-live ready</div><div class="c tl">${bgc}<div class="ms" style="left:${(e+1)*cw-16}px"></div><div class="mslab" style="right:${(n-e-1)*cw+26}px">${fmt(cols[e].d)}</div></div>`;
   h+='</div>';
   $('chart').innerHTML=h;
   $('chart').querySelectorAll('.dn[data-part]').forEach(e=>e.indeterminate=true);
-  document.querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const i=b.dataset.id;openSet.has(i)?openSet.delete(i):openSet.add(i);build();});
+  $('chart').querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const i=b.dataset.id;openSet.has(i)?openSet.delete(i):openSet.add(i);build();});
   const items=groups.flatMap(g=>g.rows.flatMap(r=>(r.parent&&!r.agg)?r.kids:[r])).filter(x=>mine(x.o));
   const who=[...selSet].sort().join(', ');
   if(!selSet.size)$('mine').innerHTML=`Showing everyone. Tick one or more names to see only their items.`;
@@ -485,7 +474,7 @@ function updateDates(){
     const sc=tr.querySelector('[data-c=st]');sc.textContent=stTxt(o);sc.className='sts '+stCls(o);
     tr.querySelector('[data-c=s]').textContent=dt(o.s);tr.querySelector('[data-c=e]').textContent=dt(o.s+o.d-1)});
 }
-function refresh(){calcEnd();build();load();chips();}
+function refresh(){normAll();calcEnd();build();load();chips();}
 $('list').addEventListener('input',e=>{
   const t=e.target;if(!t.dataset.f)return;const o=obj(+t.dataset.g,+t.dataset.r,+t.dataset.k),f=t.dataset.f,v=t.value;
   if(f==='n')o.n=v;else if(f==='o')o.o=v.split(',').map(x=>x.trim()).filter(Boolean);else if(f==='t')o.t=v;
