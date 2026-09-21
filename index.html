@@ -188,7 +188,7 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
   </div>
 
   <section>
-    <h2>Who is carrying what</h2>
+    <h2>Who is carrying what <span style="font-weight:400;color:var(--ink3);font-size:12px">(working days; items shared by three or more people are split evenly)</span></h2>
     <div class="load" id="load"></div>
   </section>
   </div>
@@ -427,11 +427,12 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape')ddOpen(false)});
 function load(){
   const m={};
   groups.forEach(g=>g.rows.forEach(r=>{
-    const list=(r.parent&&!r.agg)?r.kids:[r];
-    list.forEach(x=>x.o.forEach(p=>m[p]=(m[p]||0)+x.d));
+    const base=(r.parent&&!r.agg)?r.kids:[r];
+    const list=base.flatMap(k=>(k.ch&&k.ch.some(c=>c.own))?k.ch.filter(c=>c.own):[k]);
+    list.forEach(x=>x.o.forEach(p=>m[p]=(m[p]||0)+x.d/(x.o.length>2?x.o.length:1)));
   }));
   const mx=Math.max(...Object.values(m));
-  $('load').innerHTML=Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([p,v])=>`<div class="ld"><span>${p}</span><div class="t"><i style="width:${v/mx*100}%"></i></div><small>${v}d</small></div>`).join('');
+  $('load').innerHTML=Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([p,v])=>`<div class="ld"><span>${p}</span><div class="t"><i style="width:${v/mx*100}%"></i></div><small>${Math.round(v*10)/10}d</small></div>`).join('');
 }
 $('start').onchange=()=>build();
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(build,150)});
