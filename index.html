@@ -9,19 +9,19 @@
 :root{
   --bg:#F3F5F8; --panel:#FFFFFF; --ink:#132033; --ink2:#4B5B70; --ink3:#7C8A9C;
   --line:#DDE3EB; --wknd:#EBEEF3; --head:#E6EBF2;
-  --found:#2F5BEA; --indep:#0F8F8B; --dep:#7A4FD1; --mig:#D4772A; --ms:#132033;
+  --found:#2F5BEA; --indep:#0F8F8B; --dep:#7A4FD1; --mig:#D4772A; --ms:#132033; --ok:#1E9E5A; --bad:#D64545;
   --font:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
   --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
   --bg:#0E141D; --panel:#151D29; --ink:#E7ECF3; --ink2:#A2AFC0; --ink3:#748296;
   --line:#26313F; --wknd:#111822; --head:#1B2534;
-  --found:#6B8CFF; --indep:#35BDB8; --dep:#A98BFF; --mig:#F0A05A; --ms:#E7ECF3;
+  --found:#6B8CFF; --indep:#35BDB8; --dep:#A98BFF; --mig:#F0A05A; --ms:#E7ECF3; --ok:#4CC48A; --bad:#FF7A7A;
 }}
 :root[data-theme="dark"]{
   --bg:#0E141D; --panel:#151D29; --ink:#E7ECF3; --ink2:#A2AFC0; --ink3:#748296;
   --line:#26313F; --wknd:#111822; --head:#1B2534;
-  --found:#6B8CFF; --indep:#35BDB8; --dep:#A98BFF; --mig:#F0A05A; --ms:#E7ECF3;
+  --found:#6B8CFF; --indep:#35BDB8; --dep:#A98BFF; --mig:#F0A05A; --ms:#E7ECF3; --ok:#4CC48A; --bad:#FF7A7A;
 }
 *{box-sizing:border-box}
 [hidden]{display:none!important}
@@ -95,7 +95,7 @@ h1{font-size:clamp(24px,4vw,34px);line-height:1.1;margin:0;letter-spacing:-.02em
 .lt td.num{font-family:var(--mono);color:var(--ink3);font-size:12px;white-space:nowrap}
 .lt td.dt{font-family:var(--mono);font-size:12px;color:var(--ink2);white-space:nowrap}
 .lt tr.gr td{background:var(--head);font-size:11px;text-transform:uppercase;letter-spacing:.09em;font-weight:600;color:var(--ink2);padding:7px 10px}
-.lt tr.kid td:nth-child(2) input{padding-left:20px;color:var(--ink2)}
+.lt tr.kid td:nth-child(3) input{padding-left:20px;color:var(--ink2)}
 .lt input,.lt select{font:13px var(--font);background:transparent;color:var(--ink);border:1px solid transparent;border-radius:6px;padding:6px 7px;width:100%}
 .lt input:hover,.lt select:hover{border-color:var(--line)}
 .lt input:focus,.lt select:focus{background:var(--bg);border-color:var(--found)}
@@ -108,6 +108,17 @@ h1{font-size:clamp(24px,4vw,34px);line-height:1.1;margin:0;letter-spacing:-.02em
 .cm{flex:none;font:600 11px var(--font);color:var(--found);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap}
 .cm:hover{background:var(--head)}
 .cm:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.bar.done{background:var(--ok)}
+.bar.late{outline:2px solid var(--bad);outline-offset:1px}
+.dn{width:16px;height:16px;accent-color:var(--ok);flex:none;cursor:pointer;margin:0}
+.dn:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.lh{display:flex;gap:8px;align-items:center;min-width:0}
+.lh.d .nm{text-decoration:line-through;color:var(--ink3)}
+.pg{font:500 11px var(--mono);color:var(--ink3);margin-left:6px}
+.lt td.sts{font-family:var(--font);font-size:12.5px;color:var(--ink3)}
+.lt td.sts.done{color:var(--ok);font-weight:600}
+.lt td.sts.late{color:var(--bad);font-weight:600}
+.lt tr.isd td input[data-f=n]{text-decoration:line-through;color:var(--ink3)}
 .ctl{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:flex-end}
 .ch{display:block;font-size:11px;font-weight:400;color:var(--ink3);line-height:1.35;margin-top:2px;font-family:var(--mono)}
 .seg{display:inline-flex;background:var(--head);border-radius:9px;padding:3px}
@@ -148,7 +159,6 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
       <h1>Post Development Go Live Readiness Tracker</h1>
       <p class="sub">Post-development actionables, owners and sequence, from security setup through data migration to handover.</p>
     </div>
-    <div class="stats" id="stats"></div>
   </div>
 
   <div class="legend">
@@ -156,6 +166,8 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
     <span><i style="background:var(--indep)"></i>Independent</span>
     <span><i style="background:var(--dep)"></i>Dependent</span>
     <span><i style="background:var(--mig)"></i>Data migration</span>
+    <span><i style="background:var(--ok)"></i>Done</span>
+    <span style="color:var(--bad)">Outlined red: planned end has passed and not done</span>
     <span style="color:var(--mig)">⚠ Dependency alert</span>
   </div>
 
@@ -185,7 +197,7 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
       <input type="password" id="tok" placeholder="Fine-grained token, Contents: read and write on this repo only" autocomplete="off">
       <button type="button" id="bTok">Use token</button>
     </div>
-    <div class="tw"><table class="lt"><thead><tr><th>#</th><th>Activity</th><th>Owner(s)</th><th>Type</th><th>Start day</th><th>Days</th><th>Start</th><th>End</th><th>Notes</th><th>Comment</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
+    <div class="tw"><table class="lt"><thead><tr><th>Done</th><th>#</th><th>Activity</th><th>Owner(s)</th><th>Type</th><th>Start day</th><th>Days</th><th>Start</th><th>End</th><th>Status</th><th>Notes</th><th>Comment</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
     <p class="hint">Edits update the chart straight away. Nothing is shared until you press Save to GitHub, which commits plan.json for everyone. Owners are separated by commas; start day counts working days from the start date.</p>
   </div>
 
@@ -306,6 +318,27 @@ let groups=[
 const NOTES={'Security roles setup':'Precise role setup per job profile, team setup, record sharing where required, then app-wise testing per job profile and fixing bugs. Excludes form-specific or on-approval RBAC.','Custom upload controls to blob path':'All custom HTML upload buttons and blob restructuring in ALM','Allocation app onboarding from team':'Onboarding mechanism of Allocation','Notification automations (BD, CRM, Tech Ops)':'BD, Sales, CRM, Strategy, Tech Ops','Approval automations (BD, CRM)':'Sales, CRM, Strategy','BD and Booking/Collection role controls':'Finance only does sign-up confirmation, RM assignment only by CRM TL, deviation approval only by Strategy','Masters incl. CP Master':'Timed as per POC in Dev','BD related':'Timed as per POC in Dev','Inventory':'Timed as per POC in Dev','Sourcing (2.5L+)':'Timed as per POC in Dev','Site Visit (1.35L+)':'Extrapolated from POC in Dev','Lead (1.2L+) and child tables':'Extrapolated from POC in Dev','Opportunity and child tables (26K+)':'Extrapolated from POC in Dev','Prospect (6L+, last)':'Extrapolated from POC in Dev'};
 (function ap(rs){rs.forEach(r=>{if(NOTES[r.n])r.note=NOTES[r.n];if(r.kids)ap(r.kids)})})(groups.flatMap(g=>g.rows));
 const DEFAULT=JSON.stringify(groups);
+const inC=(a,n)=>(a||[]).includes(n);
+function isDone(r){
+  if(r._leaf)return inC(r._leaf.chd,r.n);
+  if(r.kids&&r.kids.length)return r.kids.every(isDone);
+  if(r.ch&&r.ch.length)return r.ch.every(c=>inC(r.chd,c));
+  return !!r.done;
+}
+function setDone(r,v){
+  if(r._leaf){const a=r._leaf.chd=r._leaf.chd||[],i=a.indexOf(r.n);if(v&&i<0)a.push(r.n);if(!v&&i>=0)a.splice(i,1);return}
+  if(r.kids&&r.kids.length){r.kids.forEach(k=>setDone(k,v));return}
+  if(r.ch&&r.ch.length){r.chd=v?[...r.ch]:[];return}
+  r.done=v;
+}
+function prog(r){
+  if(r._leaf)return[isDone(r)?1:0,1];
+  if(r.kids&&r.kids.length)return r.kids.reduce((a,k)=>{const q=prog(k);return[a[0]+q[0],a[1]+q[1]]},[0,0]);
+  if(r.ch&&r.ch.length)return[r.ch.filter(c=>inC(r.chd,c)).length,r.ch.length];
+  return[r.done?1:0,1];
+}
+const TODAY=new Date();TODAY.setHours(0,0,0,0);
+const REG=[];
 let END=1;
 const calcEnd=()=>{END=Math.max(1,...groups.flatMap(g=>g.rows.flatMap(r=>[r,...(r.kids||[])])).map(r=>r.s+r.d))};
 calcEnd();
@@ -325,7 +358,7 @@ function workDates(n){
   return out;
 }
 function build(){
-  calcEnd();
+  calcEnd();REG.length=0;
   const wd=workDates(END);
   const cols=[],map=[];
   for(let d=new Date(wd[0]);d<=wd[END-1];d.setDate(d.getDate()+1)){
@@ -347,15 +380,17 @@ function build(){
   const bar=(r)=>{
     const a=idx(r.s),b=idx(r.s+r.d-1),op=openSet.has(r.id);
     const left=a*cw+2,w=(b-a+1)*cw-4;
-    return `<div class="bar ${r.parent&&!op?'sum':''}" style="left:${left}px;width:${w}px;--k:${T[r.t]}" title="${r.n}: ${r.d} working days, ${fmt(cols[a].d)} to ${fmt(cols[b].d)}">${(r.parent&&!op)?'':r.d+'d'}</div>`;
+    const dn=isDone(r),late=!dn&&cols[b].d<TODAY;
+    return `<div class="bar ${r.parent&&!op?'sum':''} ${dn?'done':''} ${late?'late':''}" style="left:${left}px;width:${w}px;--k:${T[r.t]}" title="${r.n}: ${r.d} working days, ${fmt(cols[a].d)} to ${fmt(cols[b].d)}${dn?' (done)':late?' (overdue)':''}">${(r.parent&&!op)?'':(dn?'✓ ':'')+r.d+'d'}</div>`;
   };
-  const bar2=r=>{const a=idx(r.s),b=idx(r.s+r.d-1);return `<div class="bar sum" style="left:${a*cw+2}px;width:${(b-a+1)*cw-4}px;--k:${T[r.t]};opacity:.55"></div>`};
+  const bar2=r=>{const a=idx(r.s),b=idx(r.s+r.d-1);const dn=isDone(r),late=!dn&&cols[b].d<TODAY;return `<div class="bar sum ${dn?'done':''} ${late?'late':''}" style="left:${a*cw+2}px;width:${(b-a+1)*cw-4}px;--k:${T[r.t]};opacity:${dn?1:.55}"></div>`};
   const row=(r,sub)=>{
     const op=openSet.has(r.id);
-    let nm=r.parent?`<button type="button" class="tog" data-id="${r.id}" aria-expanded="${op}"><span class="chev">${op?'▼':'▶'}</span><span class="nm">${r.n} <span style="color:var(--ink3);font-weight:400">${r.sub}</span>${r.pal?`<span class="al">⚠ ${r.pal}</span>`:''}</span></button>`
-      :r.ch?`<button type="button" class="tog" data-id="${r.n}" aria-expanded="${openSet.has(r.n)}" style="padding-left:18px"><span class="chev">${openSet.has(r.n)?'▼':'▶'}</span><span class="nm" style="color:var(--ink2);font-weight:400">${r.n} <span style="color:var(--ink3)">· ${r.ch.length}</span>${r.al?`<span class="al">⚠ ${r.al}</span>`:''}${openSet.has(r.n)&&r.chn?`<span class="ch">${r.chn}</span>`:''}</span></button>`
+    const ri=REG.push(r)-1,dn=isDone(r),[pd,pt]=prog(r),part=!dn&&pd>0&&pt>1;
+    let nm=r.parent?`<button type="button" class="tog" data-id="${r.id}" aria-expanded="${op}"><span class="chev">${op?'▼':'▶'}</span><span class="nm">${r.n} <span style="color:var(--ink3);font-weight:400">${r.sub}</span><span class="pg">${pd}/${pt}</span>${r.pal?`<span class="al">⚠ ${r.pal}</span>`:''}</span></button>`
+      :r.ch?`<button type="button" class="tog" data-id="${r.n}" aria-expanded="${openSet.has(r.n)}" style="padding-left:18px"><span class="chev">${openSet.has(r.n)?'▼':'▶'}</span><span class="nm" style="color:var(--ink2);font-weight:400">${r.n} <span style="color:var(--ink3)">· ${r.ch.length}</span><span class="pg">${pd}/${pt}</span>${r.al?`<span class="al">⚠ ${r.al}</span>`:''}${openSet.has(r.n)&&r.chn?`<span class="ch">${r.chn}</span>`:''}</span></button>`
       :`<span class="nm" style="${sub==2?'padding-left:48px;font-family:var(--mono);font-size:12px;color:var(--ink2);font-weight:400':sub?'padding-left:18px;color:var(--ink2);font-weight:400':''}">${r.n}${r.al?` <span class="al" title="${r.al}">⚠ ${r.al}</span>`:''}</span>`;
-    h+=`<div class="c lab">${nm}<span class="own">${r.o.join(', ')}</span><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,fmt(cols[idx(r.s)].d),fmt(cols[idx(r.s+r.d-1)].d))}" aria-label="Comment on ${esc(r.n)}">Comment</a></div><div class="c tl">${bgc}${sub==2?bar2(r):bar(r)}</div>`;
+    h+=`<div class="c lab"><span class="lh ${dn?'d':''}"><input type="checkbox" class="dn" data-reg="${ri}" ${dn?'checked':''} ${part?'data-part="1"':''} aria-label="Mark ${esc(r.n)} as done">${nm}</span><span class="own">${r.o.join(', ')}</span><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,fmt(cols[idx(r.s)].d),fmt(cols[idx(r.s+r.d-1)].d))}" aria-label="Comment on ${esc(r.n)}">Comment</a></div><div class="c tl">${bgc}${sub==2?bar2(r):bar(r)}</div>`;
   };
   const mine=o=>selSet.size===0||o.some(x=>selSet.has(x));
   groups.forEach(g=>{
@@ -363,21 +398,19 @@ function build(){
     if(!rows.length)return;
     curG=g.g;
     h+=`<div class="c lab grp">${g.g}</div><div class="c tl grp">${bgc}</div>`;
-    rows.forEach(r=>{row(r,0);if(r.parent&&openSet.has(r.id))r.kids.filter(k=>mine(k.o)).forEach(k=>{row(k,1);if(k.ch&&openSet.has(k.n))k.ch.forEach(c=>row({n:c,o:k.o,s:k.s,d:k.d,t:k.t},2));});});
+    rows.forEach(r=>{row(r,0);if(r.parent&&openSet.has(r.id))r.kids.filter(k=>mine(k.o)).forEach(k=>{row(k,1);if(k.ch&&openSet.has(k.n))k.ch.forEach(c=>row({n:c,o:k.o,s:k.s,d:k.d,t:k.t,_leaf:k},2));});});
   });
   const e=idx(END-1);
   h+=`<div class="c lab" style="font-weight:700">Go-live ready</div><div class="c tl">${bgc}<div class="ms" style="left:${(e+1)*cw-16}px"></div><div class="mslab" style="right:${(n-e-1)*cw+26}px">${fmt(cols[e].d)}</div></div>`;
   h+='</div>';
   $('chart').innerHTML=h;
+  $('chart').querySelectorAll('.dn[data-part]').forEach(e=>e.indeterminate=true);
   document.querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const i=b.dataset.id;openSet.has(i)?openSet.delete(i):openSet.add(i);build();});
   const items=groups.flatMap(g=>g.rows.flatMap(r=>(r.parent&&!r.agg)?r.kids:[r])).filter(x=>mine(x.o));
   const who=[...selSet].sort().join(', ');
   if(!selSet.size)$('mine').innerHTML=`Showing everyone. Tick one or more names to see only their items.`;
   else if(items.length){const a=Math.min(...items.map(x=>x.s)),b=Math.max(...items.map(x=>x.s+x.d))-1;
     $('mine').innerHTML=`<b>${who}</b>: ${items.length} items, ${items.reduce((t,x)=>t+x.d,0)} working days, ${fmt(cols[idx(a)].d)} to ${fmt(cols[idx(b)].d)}`;}
-  const lastD=wd[END-1],firstD=wd[0];
-  const cal=Math.round((lastD-firstD)/864e5)+1;
-  $('stats').innerHTML=`<div class="stat"><b>${END}</b><span>Working days</span></div><div class="stat"><b>${cal}</b><span>Calendar days</span></div><div class="stat"><b>${fmt(lastD)}</b><span>Go-live ready</span></div>`;
 }
 function chips(){
   const ppl=new Set();
@@ -411,16 +444,23 @@ const esc=x=>String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g
 const obj=(g,r,k)=>{const R=groups[g].rows[r];return k>=0?R.kids[k]:R};
 let dirty=false;
 function setSt(t,d){const e=$('st');e.textContent=t;e.className='st'+(d?' dirty':'')}
-function markDirty(){dirty=true;setSt('Unsaved changes',true)}
+const DK='xos_draft';
+function saveDraft(){try{localStorage.setItem(DK,planJson())}catch(e){}}
+function clearDraft(){try{localStorage.removeItem(DK)}catch(e){}}
+function restoreDraft(){try{const d=localStorage.getItem(DK);if(d){applyPlan(JSON.parse(d));dirty=true;setSt('Restored your unsaved edits. Press Save to GitHub to share them.',true);}}catch(e){}}
+function markDirty(){dirty=true;setSt('Unsaved changes',true);saveDraft()}
+function endOf(r){return workDates(Math.max(END,r.s+r.d))[r.s+r.d-1]}
+function stCls(r){return isDone(r)?'done':(endOf(r)<TODAY?'late':'')}
+function stTxt(r){const [d,t]=prog(r);return isDone(r)?'Done':(endOf(r)<TODAY?'Overdue':'Planned')+(t>1&&d>0?' ('+d+'/'+t+' done)':'')}
 function rowHtml(r,g,ri,k,num,dt){
   const a=`data-g="${g}" data-r="${ri}" data-k="${k}"`;
-  return `<tr class="${k>=0?'kid':''}" data-key="${g}:${ri}:${k}"><td class="num">${num}</td>
+  return `<tr class="${k>=0?'kid':''} ${isDone(r)?'isd':''}" data-key="${g}:${ri}:${k}"><td><input type="checkbox" class="dn" data-ld data-g="${g}" data-r="${ri}" data-k="${k}" ${isDone(r)?'checked':''} aria-label="Mark done"></td><td class="num">${num}</td>
 <td><input ${a} data-f="n" class="w-name" value="${esc(r.n)}" aria-label="Activity"></td>
 <td><input ${a} data-f="o" class="w-own" value="${esc(r.o.join(', '))}" aria-label="Owners"></td>
 <td><select ${a} data-f="t" aria-label="Type">${Object.entries(TYPES).map(([c,l])=>`<option value="${c}" ${r.t===c?'selected':''}>${l}</option>`).join('')}</select></td>
 <td><input type="number" min="1" ${a} data-f="s" class="w-num" value="${r.s+1}" aria-label="Start day"></td>
 <td><input type="number" min="1" ${a} data-f="d" class="w-num" value="${r.d}" aria-label="Days"></td>
-<td class="dt" data-c="s">${dt(r.s)}</td><td class="dt" data-c="e">${dt(r.s+r.d-1)}</td>
+<td class="dt" data-c="s">${dt(r.s)}</td><td class="dt" data-c="e">${dt(r.s+r.d-1)}</td><td class="sts ${stCls(r)}" data-c="st">${stTxt(r)}</td>
 <td><input ${a} data-f="note" class="w-note" value="${esc(r.note||r.al||r.pal||'')}" aria-label="Notes"></td>
 <td><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,dt(r.s),dt(r.s+r.d-1))}">Comment</a></td>
 <td><button type="button" class="x" ${a} data-del aria-label="Delete row" title="Delete">×</button></td></tr>`;
@@ -432,16 +472,17 @@ function renderList(){
     const rows=g.rows.map((r,ri)=>({r,ri})).filter(x=>mineO(x.r.o)||(x.r.kids&&x.r.kids.some(k=>mineO(k.o))));
     if(!rows.length)return;
     curG=g.g;
-    h+=`<tr class="gr"><td colspan="11">${g.g}</td></tr>`;
+    h+=`<tr class="gr"><td colspan="13">${g.g}</td></tr>`;
     rows.forEach(({r,ri})=>{n++;h+=rowHtml(r,gi,ri,-1,n,dt);
       (r.kids||[]).forEach((k,ki)=>{if(mineO(k.o))h+=rowHtml(k,gi,ri,ki,n+'.'+(ki+1),dt)});});
-    h+=`<tr class="ad"><td colspan="11"><button type="button" data-add="${gi}">+ Add task to ${g.g}</button></td></tr>`;
+    h+=`<tr class="ad"><td colspan="13"><button type="button" data-add="${gi}">+ Add task to ${g.g}</button></td></tr>`;
   });
-  $('list').innerHTML=h||'<tr><td colspan="11" style="padding:16px">No items for the selected people.</td></tr>';
+  $('list').innerHTML=h||'<tr><td colspan="13" style="padding:16px">No items for the selected people.</td></tr>';
 }
 function updateDates(){
   const dt=dtFn();
   $('list').querySelectorAll('tr[data-key]').forEach(tr=>{const [g,r,k]=tr.dataset.key.split(':').map(Number);const o=obj(g,r,k);
+    const sc=tr.querySelector('[data-c=st]');sc.textContent=stTxt(o);sc.className='sts '+stCls(o);
     tr.querySelector('[data-c=s]').textContent=dt(o.s);tr.querySelector('[data-c=e]').textContent=dt(o.s+o.d-1)});
 }
 function refresh(){calcEnd();build();load();chips();}
@@ -451,7 +492,11 @@ $('list').addEventListener('input',e=>{
   else if(f==='s')o.s=Math.max(0,(parseInt(v)||1)-1);else if(f==='d')o.d=Math.max(1,parseInt(v)||1);else if(f==='note')o.note=v;
   markDirty();
 });
-$('list').addEventListener('change',e=>{if(e.target.dataset.f){refresh();updateDates();}});
+$('list').addEventListener('change',e=>{
+  const t=e.target;
+  if(t.dataset.ld!==undefined){setDone(obj(+t.dataset.g,+t.dataset.r,+t.dataset.k),t.checked);markDirty();refresh();renderList();return;}
+  if(t.dataset.f){refresh();updateDates();}
+});
 $('list').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.add!==undefined){groups[+b.dataset.add].rows.push({n:'New task',o:['Jagannath'],s:0,d:1,t:'I'});refresh();renderList();markDirty();}
@@ -460,6 +505,7 @@ $('list').addEventListener('click',e=>{
     if(+b.dataset.k>=0)groups[+b.dataset.g].rows[+b.dataset.r].kids.splice(+b.dataset.k,1);else groups[+b.dataset.g].rows.splice(+b.dataset.r,1);
     refresh();renderList();markDirty();}
 });
+$('chart').addEventListener('change',e=>{const t=e.target;if(t.dataset.reg===undefined)return;setDone(REG[+t.dataset.reg],t.checked);markDirty();refresh();});
 function setView(v){
   $('vChart').hidden=v!=='chart';$('vList').hidden=v!=='list';
   $('tChart').setAttribute('aria-pressed',v==='chart');$('tList').setAttribute('aria-pressed',v==='list');
@@ -489,11 +535,11 @@ async function saveRemote(){
     const body={message:'Update plan from the tracker',content:btoa(unescape(encodeURIComponent(planJson()))),branch:'main'};if(sha)body.sha=sha;
     const r=await fetch(API,{method:'PUT',headers:{...H,'Content-Type':'application/json'},body:JSON.stringify(body)});
     if(!r.ok)throw new Error(r.status===401||r.status===403?'Token rejected. Check it has Contents: read and write on this repo.':'Save failed (HTTP '+r.status+')');
-    dirty=false;setSt('Saved. Everyone sees this plan after a refresh.',false);
+    dirty=false;clearDraft();setSt('Saved. Everyone sees this plan after a refresh.',false);
   }catch(e){setSt(e.message||'Save failed',true);}
 }
 $('bSave').onclick=saveRemote;
-$('bReload').onclick=()=>{if(dirty&&!confirm('Discard your unsaved edits and load the last saved plan?'))return;loadRemote();};
+$('bReload').onclick=()=>{if(dirty&&!confirm('Discard your unsaved edits and load the last saved plan?'))return;clearDraft();loadRemote();};
 $('bReset').onclick=()=>{if(!confirm('Reset every row to the original default plan? Unsaved edits are lost.'))return;groups=JSON.parse(DEFAULT);$('start').value='2026-09-21';refresh();renderList();markDirty();};
 $('bTok').onclick=()=>{const v=$('tok').value.trim();if(!v)return;try{localStorage.setItem('xos_gh_token',v)}catch(e){}$('tok').value='';$('tokrow').hidden=true;saveRemote();};
 $('bCsv').onclick=()=>{
@@ -504,7 +550,7 @@ $('bCsv').onclick=()=>{
 };
 addEventListener('beforeunload',e=>{if(dirty){e.preventDefault();e.returnValue='';}});
 $('start').addEventListener('change',()=>{if(!$('vList').hidden)updateDates();markDirty();});
-build();load();chips();loadRemote();
+build();load();chips();loadRemote().then(restoreDraft);
 </script>
 
 </body>
