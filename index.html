@@ -1,0 +1,329 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Post Development Go Live Readiness Tracker</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+:root{
+  --bg:#F3F5F8; --panel:#FFFFFF; --ink:#132033; --ink2:#4B5B70; --ink3:#7C8A9C;
+  --line:#DDE3EB; --wknd:#EBEEF3; --head:#E6EBF2;
+  --found:#2F5BEA; --indep:#0F8F8B; --dep:#7A4FD1; --mig:#D4772A; --ms:#132033;
+  --font:'Instrument Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0E141D; --panel:#151D29; --ink:#E7ECF3; --ink2:#A2AFC0; --ink3:#748296;
+  --line:#26313F; --wknd:#111822; --head:#1B2534;
+  --found:#6B8CFF; --indep:#35BDB8; --dep:#A98BFF; --mig:#F0A05A; --ms:#E7ECF3;
+}}
+:root[data-theme="dark"]{
+  --bg:#0E141D; --panel:#151D29; --ink:#E7ECF3; --ink2:#A2AFC0; --ink3:#748296;
+  --line:#26313F; --wknd:#111822; --head:#1B2534;
+  --found:#6B8CFF; --indep:#35BDB8; --dep:#A98BFF; --mig:#F0A05A; --ms:#E7ECF3;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;line-height:1.45;padding-inline:16px;padding-block:28px 48px}
+.wrap{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:22px}
+h1{font-size:clamp(24px,4vw,34px);line-height:1.1;margin:0;letter-spacing:-.02em;font-weight:700;text-wrap:balance}
+.sub{color:var(--ink2);margin:6px 0 0;max-width:62ch}
+.top{display:flex;flex-wrap:wrap;gap:20px 40px;align-items:flex-end;justify-content:space-between}
+.stats{display:flex;gap:28px;flex-wrap:wrap}
+.stat b{display:block;font-family:var(--mono);font-weight:500;font-size:22px;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.stat span{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3)}
+.legend{display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--ink2);font-size:12.5px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-2px}
+.legend i.assumed{background:repeating-linear-gradient(135deg,var(--indep) 0 3px,transparent 3px 6px);border:1px solid var(--indep)}
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:10px;overflow:auto;max-width:100%}
+.grid{display:grid;width:max-content;min-width:100%}
+.c{border-bottom:1px solid var(--line);min-height:36px;display:flex;align-items:center}
+.lab{position:sticky;left:0;z-index:3;background:var(--panel);padding:4px 12px;width:var(--labw);border-right:1px solid var(--line);gap:8px;justify-content:space-between}
+.lab .nm{min-width:0;font-weight:500}
+.lab .own{font-size:11.5px;color:var(--ink2);text-align:right;flex:none;max-width:44%}
+.lab.grp{background:var(--head);font-size:11px;text-transform:uppercase;letter-spacing:.09em;font-weight:600;color:var(--ink2)}
+.lab.grp,.tl.grp{min-height:28px}
+.tl{position:relative;background:transparent}
+.tl.grp{background:var(--head)}
+.hd{background:var(--panel);position:sticky;top:0;z-index:4;flex-direction:column;align-items:stretch;justify-content:center;border-bottom:1px solid var(--line)}
+.hd.lab{z-index:5;color:var(--ink3);font-size:11px;text-transform:uppercase;letter-spacing:.08em;align-items:flex-start;justify-content:flex-end;padding-bottom:6px}
+.wk{font-size:11px;color:var(--ink2);padding:2px 6px;border-left:1px solid var(--line);font-weight:600;white-space:nowrap;overflow:hidden}
+.dy{display:grid;font-family:var(--mono);font-size:10.5px;color:var(--ink3);text-align:center}
+.dy span{padding:3px 0;border-left:1px solid var(--line);line-height:1.15}
+.bg{position:absolute;inset:0;display:grid;pointer-events:none}
+.bg span{border-left:1px solid var(--line);opacity:.7}
+.bar{position:absolute;top:7px;height:22px;border-radius:5px;color:#fff;font:500 11px var(--mono);display:flex;align-items:center;padding-left:7px;white-space:nowrap;overflow:hidden;background:var(--k)}
+:root[data-theme="dark"] .bar{color:#0B1118}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .bar{color:#0B1118}}
+.bar.assumed{background:repeating-linear-gradient(135deg,var(--k) 0 4px,color-mix(in srgb,var(--k) 55%,transparent) 4px 8px)}
+.bar.sum{height:10px;top:13px;border-radius:2px;padding:0}
+.ms{position:absolute;top:8px;width:20px;height:20px;background:var(--ms);transform:rotate(45deg) scale(.72)}
+.mslab{position:absolute;top:0;height:100%;display:flex;align-items:center;font-weight:700;font-size:12px}
+.tog{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;display:flex;gap:6px;align-items:center;text-align:left}
+.tog:focus-visible,.seg button:focus-visible,input:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.chev{font-size:10px;color:var(--ink3);width:10px}
+.who{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
+.wl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chips button{font:600 13px var(--font);border:1px solid var(--line);background:transparent;color:var(--ink2);padding:6px 14px;border-radius:999px;cursor:pointer}
+.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.chips button:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.mine{font-size:13px;color:var(--ink2);min-height:19px}
+.mine b{font-family:var(--mono);font-weight:500;color:var(--ink)}
+.ctl{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:flex-end}
+.ch{display:block;font-size:11px;font-weight:400;color:var(--ink3);line-height:1.35;margin-top:2px;font-family:var(--mono)}
+.seg{display:inline-flex;background:var(--head);border-radius:9px;padding:3px}
+.seg button{font:600 13px var(--font);border:0;background:transparent;color:var(--ink2);padding:8px 16px;border-radius:7px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--panel);color:var(--ink);box-shadow:0 1px 2px rgba(10,20,40,.18)}
+.ctl label{color:var(--ink2);font-size:13px;display:flex;gap:8px;align-items:center}
+input[type=date]{font:13px var(--mono);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:6px 8px;color-scheme:light dark}
+h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
+.load{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 28px}
+.ld{display:grid;grid-template-columns:78px 1fr 40px;gap:10px;align-items:center}
+.ld .t{height:8px;background:var(--head);border-radius:4px;overflow:hidden}
+.ld .t i{display:block;height:100%;background:var(--found);border-radius:4px}
+.ld small{font:12px var(--mono);color:var(--ink2);text-align:right}
+.al{display:block;font-size:11px;font-weight:500;color:var(--mig);line-height:1.25;margin-top:1px}
+.notes{color:var(--ink2);font-size:12.5px;max-width:80ch;margin:0;padding-left:18px}
+.notes li{margin-bottom:4px}
+@media (max-width:560px){.lab .own{display:none}}
+</style>
+<style>body{margin:0}</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Post Development Go Live Readiness Tracker</h1>
+      <p class="sub">Post-development actionables, owners and sequence, from security setup through data migration to handover.</p>
+    </div>
+    <div class="stats" id="stats"></div>
+  </div>
+
+  <div class="legend">
+    <span><i style="background:var(--found)"></i>Foundational</span>
+    <span><i style="background:var(--indep)"></i>Independent</span>
+    <span><i style="background:var(--dep)"></i>Dependent</span>
+    <span><i style="background:var(--mig)"></i>Data migration</span>
+    <span style="color:var(--mig)">⚠ Dependency alert</span>
+  </div>
+
+  <div class="who"><span class="wl">View by person</span><div class="chips" id="chips" role="group" aria-label="Filter by person"></div><div class="mine" id="mine" aria-live="polite"></div></div>
+
+  <div class="chart" id="chart" role="region" aria-label="Gantt chart" tabindex="0"></div>
+
+  <div class="ctl">
+    <label for="start">Start date <input type="date" id="start" value="2026-09-21"></label>
+  </div>
+
+  <section>
+    <h2>Who is carrying what</h2>
+    <div class="load" id="load"></div>
+  </section>
+
+  <section>
+    <h2>How this plan was sequenced</h2>
+    <ul class="notes">
+      <li>Durations are the working-day estimates from the readiness sheet. Each person works one task at a time; independent items run in parallel across owners.</li>
+      <li>Security roles (81 custom roles, taken from the org's unmanaged roles) run first over 2 days in four groups, then app-wise configuration and testing per job profile over 2 days across the 22 custom apps (xr_ prefix). Click any row to expand. Child tables for Lead and Opportunity are the xr_ tables with a lookup to them, read from the org.</li>
+      <li>Sanskar's automation flows (46 in total) are grouped as listed by the team and sit inside the sheet's original durations (notifications 1 day, approvals 2 days, Chanakya 2 days). Every email flow logs its action in the xr_email table. 19 notification flows in 1 day is tight and may need more time.</li>
+      <li>Blob upload controls also start first. Edge-case testing follows the build items; user manuals follow the dashboards.</li>
+      <li>Data migration starts Tue 22 Sep: Masters, BD, Inventory, Sourcing, Lead, Site Visit, Opportunity, with Chanakya tables standalone after Inventory. Lead moved ahead of Site Visit because the visit table looks up the lead. Prospect runs last (6L+ rows, estimated 3 days, up from 2 for 5L), so its lookups from Lead and Visit are filled in afterwards. Closing Manager feedback follows Lead. Click the row to expand.</li>
+      <li>Dependency alerts: dashboards need the KPI definitions finalised; the BD migration needs billing schedule and agreement data for all projects.</li>
+    </ul>
+  </section>
+</div>
+
+<script>
+const T={F:'var(--found)',I:'var(--indep)',D:'var(--dep)',M:'var(--mig)'};
+const groups=[
+ {g:'Foundation',rows:[
+  {n:'Security roles setup',o:['Jaideep'],s:0,d:2,t:'F',parent:1,agg:1,id:'roles',sub:'· 81 custom roles in 4 groups',kids:[
+   {n:"Business development, sales and CRM",o:['Jaideep'],s:0,d:1,t:'F',ch:["BD_Head", "BD_MI", "BD_Manager", "BD_TL", "Sourcing_Head", "Sourcing_Manager", "Sourcing_TL", "Closing_Head", "Closing_Manager", "Closing_TL", "Sales_Head", "CRM_Head", "CRM_MIS_Manager", "CRM_MIS_TL", "CRM_RM", "CRM_Regional_Head", "CRM_TL", "Revenue_Head", "Revenue_Manager", "Revenue_TL", "Presales_Vertical_SPOC", "Channel_Partner_Vertical_SPOC", "Allocation_Manager", "Sitevisit_Manager", "Allocation Manager (Interim)", "SYT_SiteVisit_PublicForm"]},
+   {n:"Site, technology and operations",o:['Jaideep'],s:0,d:1,t:'F',ch:["Site_Admin_Head", "Site_Admin_Manager", "Site_Admin_TL", "Site_Admin_Vertical_SPOC", "Site_DEO", "Site_Head", "Site_MIS", "Central_MIS_Manager", "Central_MIS_TL", "XCC_Head", "XCC_Manager", "XCC_TL", "Technology_Head", "Technology_Manager", "Technology_TL", "Technology_Vertical_SPOC", "Psuedo_Admin"]},
+   {n:"Marketing, brand and digital",o:['Jaideep'],s:1,d:1,t:'F',ch:["Brand_Executive", "Brand_Head", "Brand_Manager", "Assistant_Brand_Manager", "Co_Brand_Manager", "Marketing_Head", "Marketing_Vertical_SPOC", "Digital_Head", "Digital_Manager", "Digital_TL", "Digital_Vertical_SPOC", "Events_Head", "Events_Manager", "Events_TL", "Events_Vertical_SPOC", "DST_Head", "DST_Manager", "DST_TL", "CDT_Head", "CDT_Manager", "CDT_TL", "CDT_Vertical_SPOC"]},
+   {n:"Leadership, strategy and corporate",o:['Jaideep'],s:1,d:1,t:'F',ch:["CEO", "RCEO", "CEO-Business Manager", "Office_of_CEO_Head", "Office_of_CEO_Manager", "Office_of_CEO_TL", "Strategy_Head", "Co_strategy", "Project_strategy", "Finance_Head", "Finance_Manager", "Finance_TL", "Legal_Manager", "CPT", "QA1 Test Role", "QA1 Other Role"]}]},
+  {n:'App-wise configuration and testing per job profile',o:['Jaideep'],s:2,d:2,t:'F',parent:1,agg:1,id:'apps',sub:'· 22 custom apps (xr_ prefix)',kids:[
+   {n:'Sales (xr_Sales)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'CRM (xr_CRM)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'Business Development (xr_BusinessDevelopment)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'Allocation (xr_Allocation)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'Site Visit (xr_SiteVisit)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'CP Sourcing (xr_CPSourcing)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'CPT (xr_CPT)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'Strategy (xr_Strategy)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'DST (xr_DST)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'Site MIS (xr_SiteMIS)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'Site Admin (xr_SiteAdmin)',o:['Jaideep'],s:2,d:1,t:'F'},
+   {n:'Marketing (xr_Marketing)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Digital (xr_Digital)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Events (xr_Events)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Xanadu Contact Center (xr_XanaduContactCenter)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Legal (xr_Legal)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Technology (xr_Technology)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Technology Administration (xr_TechnologyAdministration)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'CEO (xr_CEO)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'RCEO (xr_RCEO)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Office of CEO (xr_OfficeofCEO)',o:['Jaideep'],s:3,d:1,t:'F'},
+   {n:'Office of CFO (xr_OfficeofCFO)',o:['Jaideep'],s:3,d:1,t:'F'}]},
+  {n:'Custom upload controls to blob path',o:['Pratham'],s:0,d:2,t:'F',parent:1,id:'blob',sub:'· 31 controls and forms, 2 steps',kids:[{n:'Define blob structure',o:['Abhijit','Pratham','Jagannath'],s:0,d:1,t:'F'},{n:'Custom upload controls',o:['Pratham'],s:1,d:1,t:'F',chn:'Dev read from the org. UAT and Prod to verify for every control.',ch:["Channel Partner custom upload field (xr_/ChannelPartner/CustomUploadField.html) \u00b7 buttons: Choose File, Copy URL", "Blob upload (xr_blob_upload_envvar, container from env variable xr_BlobContainerName) \u00b7 buttons: Choose File, View", "Launch Budget bulk upload panel (xr_bd_launchbudget_bulkupload_panel) \u00b7 buttons: Download Template, Bulk Upload, Download Error Report", "Launch CP bulk upload panel (xr_bd_launchcp_bulkupload_panel, and _v2) \u00b7 buttons: Download Template, Bulk Upload, Download Error Report", "Project Budget bulk upload panel (xr_bd_projectbudget_bulkupload_panel) \u00b7 buttons: Download Template, Bulk Upload, Download Error Report", "Unit inventory bulk upload panel (xr_bd_unit_bulkupload_panel) \u00b7 buttons: Download Template, Bulk Upload, Download Error Report", "CP Onboarding form (xr_channelpartner): Firm PAN card, Firm RERA certificate, Firm registration certificate, PAN card, RERA certificate uploads", "Applicant form: PAN card, Aadhaar, Passport uploads", "Floor form: Floor plan upload", "Block form: Tower plan upload, Unit bulk upload panel", "Unit form: Unit plan upload", "Project form: RERA certificate upload, Project budget bulk upload panel", "Launch form: Logo, EOI form start and end page, Booking form start and end page uploads, Launch budget and Launch CP bulk upload panels", "BD potential project form: Pitch deck, SOW, Final agreement, Sign-up receipt uploads, Site visit document", "Expense Requisition Request form (xr_budgetrequisition, also its process stage): Upload PO, Upload Tax Invoice", "Expense Adjustment Request form: Adjustment upload (POC), attachment", "Budget Operation Request form: Attachment upload", "Collateral form: Document upload", "Document form: Generated file", "Quotation form: Document, Document URL", "HLA form: Sanction advice and other attachments", "App config value form: File URL", "Booking Details form: Opportunity Booking Flow v3, responsive (opportunity_booking_flow_v3) \u00b7 3 file inputs","Booking Details form: Booking Wizard (xr_/BookingWizard.html) \u00b7 2 file inputs, Upload scans where available, attachment stored on the booking record","Collection Details form: Collection Flow (opportunity_collection_flow) \u00b7 1 file input, blob upload through env variable xr_KycStorageSasUrl","Collection Details form: Add Collection Feedback Panel \u00b7 2 file inputs, executed registration document and AFS document, blob via xr_KycStorageSasUrl","Collection Details form: Collection Pay Panel \u00b7 1 file input, Attach the payment proof, blob via xr_KycStorageSasUrl","Collection Details form: Collection clearance panel \u00b7 1 file input, Attach the clearance proof, blob via xr_KycStorageSasUrl","Collection Details form: Collection registration panel \u00b7 2 file inputs, Attach the executed registration document, blob via xr_KycStorageSasUrl","EOI/PRR Document Workspace (v2, v3, fluent) \u00b7 blob upload through env variable xr_IssueBlobSasToken","Document Studio (xr_/DocumentStudio.html) \u00b7 writes to blob"]}]}]},
+ {g:'Build and automate',rows:[
+  {n:'Remove autonumber from primary names',o:['Jagannath'],s:0,d:1,t:'I'},
+  {n:'Site Visit function app in UAT and Prod',o:['Pratham','Jagannath'],s:6,d:1,t:'I'},
+  {n:'Site Visit UI URL optimisation',o:['Jagannath'],s:7,d:1,t:'I'},
+  {n:'Allocation app onboarding from team',o:['Jagannath'],s:8,d:1,t:'I'},
+  {n:"Notification automations (BD, CRM, Tech Ops)",o:['Sanskar'],s:0,d:1,t:'I',parent:1,agg:1,id:"notif",sub:"\u00b7 19 flows",pal:"Log every email action in the xr_email table",kids:[
+   {n:"BD: handover and project setup mails",o:['Sanskar'],s:0,d:1,t:'I',ch:["Mail to Finance once handover to team is done by BD", "Mail to BD stakeholders after sign up confirmation by Finance, with respective notes", "Mail to Strategy head on project activation to check the project and assign a project strategist", "Mail to Project Strategy once assigned, for the project setup", "Mail to Marketing head for marketing team onboarding and launch setup"]},
+   {n:"CRM: notifications",o:['Sanskar'],s:0,d:1,t:'I',ch:["Notify Closing Manager after Strategy approves or rejects the deviation", "Handover to CRM: notify CRM TL after Closing Manager hands over the booking", "After RM assignment, notify the RM of their booking", "ACE / PRR / Onboarding / PRR onboarding rejection by CRM RM: notify Closing Manager with rejection details", "Notify CRM RM after Closing Manager hands back post rectification, to proceed with onboarding or collection", "Notify CRM RM after CRM TL approves the rejection or cancellation", "Notify CRM TL and RM to fill Handover to Developer once collection is complete for all milestones", "Scheduled flow: notify TLs and Site Heads of pending Closing Manager feedback for the day", "On handover to CRM, if CP KYC is not done: notify Sourcing team, Site Head in cc", "Calling status requesting cancellation in collection: notify Closing Manager, cc Closing TL, CRM TL, CRM RM for retention effort"]},
+   {n:"Tech Ops: upload status notifications",o:['Sanskar'],s:0,d:1,t:'I',ch:["On CP Base upload: notify status and failures with reason for reupload to the uploader, looping support@xanadu.in", "On Project Budget upload: notify status and failures with reason for reupload to the uploader, looping support@xanadu.in", "On Launch Budget upload: notify status and failures with reason for reupload to the uploader, looping support@xanadu.in", "On Unit Inventory upload: notify status and failures with reason for reupload to the uploader, looping support@xanadu.in"]}]},
+  {n:'Source protection and inventory release',o:['Sanskar'],s:1,d:1,t:'I'},
+  {n:"Approval automations (BD, CRM)",o:['Sanskar'],s:2,d:2,t:'I',parent:1,agg:1,id:"appr",sub:"\u00b7 18 flows",pal:"Log every email action in the xr_email table",kids:[
+   {n:"BD: DOPE, legal / RCEO / finance / CEO stages",o:['Sanskar'],s:2,d:1,t:'I',ch:["Mail to Legal with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at Legal stage", "Mail to RCEO with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at RCEO stage", "Mail to Finance with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at Finance stage", "Mail to CEO with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at CEO stage"]},
+   {n:"CRM: approval flows",o:['Sanskar'],s:2,d:1,t:'I',ch:["Strategy approval after deviation is detected in the booking", "CRM TL approval after CRM RM raises rejection or cancellation"]},
+   {n:"BD: Service agreement, legal / RCEO / finance / CEO stages",o:['Sanskar'],s:3,d:1,t:'I',ch:["Mail to Legal with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at Legal stage", "Mail to RCEO with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at RCEO stage", "Mail to Finance with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at Finance stage", "Mail to CEO with cc to BD after sending from draft stage", "Request changes, approved, rejected automation at CEO stage"]}]},
+  {n:"Chanakya automations and testing",o:['Sanskar'],s:4,d:2,t:'I',parent:1,agg:1,id:"chan",sub:"\u00b7 8 flows",pal:"Log every email action in the xr_email table",kids:[
+   {n:"Requestor to Strategy approver flows",o:['Sanskar'],s:4,d:1,t:'I',ch:["Budget Operation, CPT Requestor to Strategy Approver (all three Budget Operation types)", "Expense Adjustment, CPT Requestor to Strategy Approver", "Expense Requisition, Vertical POC to Strategy Approver", "Vendor Evaluation, Vertical POC to Strategy Approver"]},
+   {n:"Reclamation, vendor onboarding, escalations, reminders",o:['Sanskar'],s:5,d:1,t:'I',ch:["Budget Reclamation for expired Allocation requests, restores the launch budget", "Vendor Onboarding for newly onboarded vendor", "Weekly escalations", "Reminder flows for all modules"]}]},
+  {n:'Audit logs for selected entities',o:['Jaideep'],s:4,d:1,t:'I'},
+  {n:'BD and Booking/Collection role controls',o:['Jaideep'],s:5,d:2,t:'I'},
+  {n:'Dashboards for all roles',o:['Abhijit','Yash','Vignesh'],s:0,d:3,t:'I',al:'Needs KPI definitions finalised'}]},
+ {g:'Data migration (starts Tue 22 Sep)',rows:[
+  {n:'Data migration',o:['Jagannath','Pratham'],s:1,d:12,t:'M',parent:1,id:'mig',sub:'· 10 workstreams',pal:'BD: needs billing schedule and agreement data for all projects',kids:[
+   {n:'Masters incl. CP Master',o:['Jagannath','Pratham'],s:1,d:1,t:'M'},
+   {n:'BD related',o:['Supriya','Jagannath'],al:'Needs billing schedule and agreement data for all projects',s:2,d:1,t:'M'},
+   {n:'Inventory',o:['Jagannath','Pratham'],s:3,d:2,t:'M'},
+   {n:'Chanakya tables (standalone, after Inventory)',o:['Jagannath','Pratham'],s:6,d:2,t:'M'},
+   {n:'Sourcing (2.5L+)',o:['Jagannath','Pratham'],s:6,d:2,t:'M'},
+   {n:'Lead (1.2L+) and child tables',o:['Jagannath','Pratham'],s:8,d:1,t:'M',ch:["xr_applicant", "xr_b2cactivity", "xr_quotation", "xr_sitevisitsteplog", "xr_task"],chn:'Child tables (Visit, Opportunity and Closing Manager feedback are own rows):'},
+   {n:'Site Visit (1.35L+)',o:['Jagannath','Pratham'],s:9,d:1,t:'M'},
+   {n:'Opportunity and child tables (26K+)',o:['Jagannath','Pratham'],s:10,d:3,t:'M',ch:["xr_opportunityapplicant", "xr_bdactivity", "xr_bookingteamdetail", "xr_cancellationlog", "xr_collectionfeedback", "xr_collectionlog", "xr_collectionschedule", "xr_costsheet", "xr_hla", "xr_phonecall", "xr_quotationmilestone", "xr_rectificationimpact","xr_eoiprrmaster (EOI / PRR)"],chn:'Child tables (Applicant, B2C activity, Task shared with Lead):'},
+   {n:'Closing Manager feedback (1.15L+)',o:['Jagannath','Pratham'],s:9,d:1,t:'M'},
+   {n:'Prospect (6L+, last)',o:['Jagannath','Pratham'],s:10,d:3,t:'M'}]}]},
+ {g:'Integrate and test',rows:[
+  {n:'External integrations',o:['Vignesh','Pratham'],s:3,d:3,t:'D',parent:1,id:'integ',sub:'· 6 integrations',kids:[
+   {n:"LSQ",o:['Vignesh','Pratham'],s:3,d:1,t:'D'},
+   {n:"Chandak",o:['Vignesh','Pratham'],s:3,d:1,t:'D'},
+   {n:"Sunteck",o:['Vignesh','Pratham'],s:4,d:1,t:'D'},
+   {n:"Kalyera (WhatsApp)",o:['Vignesh','Pratham'],s:4,d:1,t:'D'},
+   {n:"HLA",o:['Vignesh','Pratham'],s:5,d:1,t:'D'},
+   {n:"AI Calling",o:['Vignesh','Pratham'],s:5,d:1,t:'D'}]},
+  {n:'Technical edge-case testing and fixes',o:['Sanskar','Jaideep'],s:9,d:3,t:'D'},
+  {n:'Functional edge-case testing and fixes',o:['Vignesh'],s:9,d:2,t:'D'}]},
+ {g:'Handover',rows:[
+  {n:'User manuals (after dashboards)',o:['Vignesh'],s:6,d:3,t:'D',parent:1,agg:1,id:'um',sub:'· 22 apps, job profiles per app',kids:[
+   {n:"Digital app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Digital Head", "Digital TL", "Digital Manager", "Sales Head", "Digital Vertical SPOC"]},
+   {n:"Allocation app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Allocation Manager"]},
+   {n:"Marketing app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Marketing Head", "Brand Manager", "Co Brand Manager", "Marketing Vertical SPOC", "Brand Head", "Assistant Brand Manager", "Brand Executive"]},
+   {n:"Site Visit app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Sitevisit Manager"]},
+   {n:"Technology app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Technology Head", "Technology TL", "Technology Manager", "Technology Vertical SPOC"]},
+   {n:"CEO app",o:['Vignesh'],s:6,d:3,t:'D',ch:["CEO"]},
+   {n:"Sales app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Closing Manager", "Site Head", "Closing Head", "Closing TL", "Sales Head"]},
+   {n:"Legal app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Legal Manager"]},
+   {n:"RCEO app",o:['Vignesh'],s:6,d:3,t:'D',ch:["RCEO"]},
+   {n:"Business Development app",o:['Vignesh'],s:6,d:3,t:'D',ch:["BD Head", "BD TL", "BD MI", "BD Manager"]},
+   {n:"Technology Administration app",o:['Vignesh'],s:6,d:3,t:'D',ch:["No job profile roles besides administrators"]},
+   {n:"Office of CFO app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Finance TL", "Finance Manager", "Finance Head"]},
+   {n:"Xanadu Contact Center app",o:['Vignesh'],s:6,d:3,t:'D',ch:["XCC Head", "XCC Manager", "XCC TL", "Sales Head", "Presales Vertical SPOC"]},
+   {n:"Office of CEO app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Office of CEO Manager", "Office of CEO TL", "Central MIS TL", "Office of CEO Head", "Central MIS Manager"]},
+   {n:"DST app",o:['Vignesh'],s:6,d:3,t:'D',ch:["DST Manager", "DST TL", "DST Head", "Sales Head"]},
+   {n:"Strategy app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Co strategy", "Project strategy", "Strategy Head"]},
+   {n:"CP Sourcing app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Sourcing Manager", "CDT Head", "CDT Manager", "Channel Partner Vertical SPOC", "Sourcing Head", "CDT TL", "CDT Vertical SPOC", "Site Head", "Sourcing TL", "Sales Head"]},
+   {n:"CPT app",o:['Vignesh'],s:6,d:3,t:'D',ch:["CPT"]},
+   {n:"Site MIS app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Site MIS"]},
+   {n:"Site Admin app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Site Admin Head", "Site Admin Manager", "Site Admin Vertical SPOC", "Site Admin TL"]},
+   {n:"CRM app",o:['Vignesh'],s:6,d:3,t:'D',ch:["CRM Head", "CRM RM", "CRM MIS TL", "CRM Regional Head", "CRM TL", "CRM MIS Manager"]},
+   {n:"Events app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Events TL", "Events Head", "Events Manager", "Events Vertical SPOC"]}]}]}
+];
+const END=Math.max(...groups.flatMap(g=>g.rows.map(r=>r.s+r.d)));
+const openSet=new Set();let sel='All';
+const $=id=>document.getElementById(id);
+const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DL='SMTWTFS';
+const fmt=d=>d.getDate()+' '+M[d.getMonth()];
+function startDate(){
+  let d=new Date(($('start').value||'2026-09-21')+'T00:00:00');
+  while(d.getDay()===0||d.getDay()===6)d.setDate(d.getDate()+1);
+  return d;
+}
+function workDates(n){
+  const out=[],d=startDate();
+  while(out.length<n){ if(d.getDay()&&d.getDay()!==6)out.push(new Date(d)); d.setDate(d.getDate()+1); }
+  return out;
+}
+function build(){
+  const wd=workDates(END);
+  const cols=[],map=[];
+  for(let d=new Date(wd[0]);d<=wd[END-1];d.setDate(d.getDate()+1)){
+    if(d.getDay()!==0&&d.getDay()!==6)map.push(cols.length);
+    cols.push({d:new Date(d)});
+  }
+  const idx=i=>map[i];
+  const cw=36, labw=innerWidth<560?190:360, n=cols.length;
+  const tpl=`repeat(${n},${cw}px)`;
+  let h=`<div class="grid" style="--labw:${labw}px;grid-template-columns:${labw}px ${n*cw}px">`;
+  // header
+  let wk='';const weeks=[];
+  cols.forEach((c,i)=>{const mon=new Date(c.d);mon.setDate(mon.getDate()-((mon.getDay()+6)%7));const k=mon.getTime();
+    if(!weeks.length||weeks[weeks.length-1].k!==k)weeks.push({k,mon,from:i,n:0});weeks[weeks.length-1].n++;});
+  wk=`<div style="display:grid;grid-template-columns:${weeks.map(w=>w.n*cw+'px').join(' ')}">`+weeks.map(w=>`<div class="wk">Week of ${fmt(w.mon)}</div>`).join('')+'</div>';
+  const dy=`<div class="dy" style="grid-template-columns:${tpl}">`+cols.map(c=>`<span>${DL[c.d.getDay()]}<br>${c.d.getDate()}</span>`).join('')+'</div>';
+  h+=`<div class="c hd lab">Activity · owner</div><div class="c hd">${wk}${dy}</div>`;
+  const bgc=`<div class="bg" style="grid-template-columns:${tpl}">`+cols.map(c=>`<span></span>`).join('')+'</div>';
+  const bar=(r)=>{
+    const a=idx(r.s),b=idx(r.s+r.d-1),op=openSet.has(r.id);
+    const left=a*cw+2,w=(b-a+1)*cw-4;
+    return `<div class="bar ${r.parent&&!op?'sum':''}" style="left:${left}px;width:${w}px;--k:${T[r.t]}" title="${r.n}: ${r.d} working days, ${fmt(cols[a].d)} to ${fmt(cols[b].d)}">${(r.parent&&!op)?'':r.d+'d'}</div>`;
+  };
+  const bar2=r=>{const a=idx(r.s),b=idx(r.s+r.d-1);return `<div class="bar sum" style="left:${a*cw+2}px;width:${(b-a+1)*cw-4}px;--k:${T[r.t]};opacity:.55"></div>`};
+  const row=(r,sub)=>{
+    const op=openSet.has(r.id);
+    let nm=r.parent?`<button type="button" class="tog" data-id="${r.id}" aria-expanded="${op}"><span class="chev">${op?'▼':'▶'}</span><span class="nm">${r.n} <span style="color:var(--ink3);font-weight:400">${r.sub}</span>${r.pal?`<span class="al">⚠ ${r.pal}</span>`:''}</span></button>`
+      :r.ch?`<button type="button" class="tog" data-id="${r.n}" aria-expanded="${openSet.has(r.n)}" style="padding-left:18px"><span class="chev">${openSet.has(r.n)?'▼':'▶'}</span><span class="nm" style="color:var(--ink2);font-weight:400">${r.n} <span style="color:var(--ink3)">· ${r.ch.length}</span>${r.al?`<span class="al">⚠ ${r.al}</span>`:''}${openSet.has(r.n)&&r.chn?`<span class="ch">${r.chn}</span>`:''}</span></button>`
+      :`<span class="nm" style="${sub==2?'padding-left:48px;font-family:var(--mono);font-size:12px;color:var(--ink2);font-weight:400':sub?'padding-left:18px;color:var(--ink2);font-weight:400':''}">${r.n}${r.al?` <span class="al" title="${r.al}">⚠ ${r.al}</span>`:''}</span>`;
+    h+=`<div class="c lab">${nm}<span class="own">${r.o.join(', ')}</span></div><div class="c tl">${bgc}${sub==2?bar2(r):bar(r)}</div>`;
+  };
+  const mine=o=>sel==='All'||o.includes(sel);
+  groups.forEach(g=>{
+    const rows=g.rows.filter(r=>mine(r.o)||(r.kids&&r.kids.some(k=>mine(k.o))));
+    if(!rows.length)return;
+    h+=`<div class="c lab grp">${g.g}</div><div class="c tl grp">${bgc}</div>`;
+    rows.forEach(r=>{row(r,0);if(r.parent&&openSet.has(r.id))r.kids.filter(k=>mine(k.o)).forEach(k=>{row(k,1);if(k.ch&&openSet.has(k.n))k.ch.forEach(c=>row({n:c,o:k.o,s:k.s,d:k.d,t:k.t},2));});});
+  });
+  const e=idx(END-1);
+  h+=`<div class="c lab" style="font-weight:700">Go-live ready</div><div class="c tl">${bgc}<div class="ms" style="left:${(e+1)*cw-16}px"></div><div class="mslab" style="right:${(n-e-1)*cw+26}px">${fmt(cols[e].d)}</div></div>`;
+  h+='</div>';
+  $('chart').innerHTML=h;
+  document.querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const i=b.dataset.id;openSet.has(i)?openSet.delete(i):openSet.add(i);build();});
+  const items=groups.flatMap(g=>g.rows.flatMap(r=>(r.parent&&!r.agg)?r.kids:[r])).filter(x=>mine(x.o));
+  if(sel==='All')$('mine').innerHTML=`Showing everyone. Pick a name to see only that person's items.`;
+  else if(items.length){const a=Math.min(...items.map(x=>x.s)),b=Math.max(...items.map(x=>x.s+x.d))-1;
+    $('mine').innerHTML=`<b>${sel}</b>: ${items.length} items, ${items.reduce((t,x)=>t+x.d,0)} working days, ${fmt(cols[idx(a)].d)} to ${fmt(cols[idx(b)].d)}`;}
+  const lastD=wd[END-1],firstD=wd[0];
+  const cal=Math.round((lastD-firstD)/864e5)+1;
+  $('stats').innerHTML=`<div class="stat"><b>${END}</b><span>Working days</span></div><div class="stat"><b>${cal}</b><span>Calendar days</span></div><div class="stat"><b>${fmt(lastD)}</b><span>Go-live ready</span></div>`;
+}
+function chips(){
+  const ppl=new Set();
+  const add=r=>{r.o.forEach(x=>ppl.add(x));(r.kids||[]).forEach(add)};
+  groups.forEach(g=>g.rows.forEach(add));
+  const list=['All',...[...ppl].sort()];
+  $('chips').innerHTML=list.map(x=>`<button type="button" aria-pressed="${x===sel}">${x}</button>`).join('');
+  $('chips').querySelectorAll('button').forEach(b=>b.onclick=()=>{sel=b.textContent;chips();build();});
+}
+function load(){
+  const m={};
+  groups.forEach(g=>g.rows.forEach(r=>{
+    const list=(r.parent&&!r.agg)?r.kids:[r];
+    list.forEach(x=>x.o.forEach(p=>m[p]=(m[p]||0)+x.d));
+  }));
+  const mx=Math.max(...Object.values(m));
+  $('load').innerHTML=Object.entries(m).sort((a,b)=>b[1]-a[1]).map(([p,v])=>`<div class="ld"><span>${p}</span><div class="t"><i style="width:${v/mx*100}%"></i></div><small>${v}d</small></div>`).join('');
+}
+$('start').onchange=build;
+let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(build,150)});
+build();load();chips();
+</script>
+
+</body>
+</html>
