@@ -62,12 +62,16 @@ h1{font-size:clamp(24px,4vw,34px);line-height:1.1;margin:0;letter-spacing:-.02em
 .tog{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;display:flex;gap:6px;align-items:center;text-align:left}
 .tog:focus-visible,.seg button:focus-visible,input:focus-visible{outline:2px solid var(--found);outline-offset:2px}
 .chev{font-size:10px;color:var(--ink3);width:10px}
-.who{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:10px}
-.wl{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink3);font-weight:600}
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chips button{font:600 13px var(--font);border:1px solid var(--line);background:transparent;color:var(--ink2);padding:6px 14px;border-radius:999px;cursor:pointer}
-.chips button[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
-.chips button:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.who{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.dd{position:relative}
+#ddb{font:600 13px var(--font);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:9px;padding:9px 14px;cursor:pointer;display:flex;gap:6px;align-items:center}
+#ddb b{font-weight:600;color:var(--found);max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ddb:focus-visible,.ddp button:focus-visible,.ddp input:focus-visible{outline:2px solid var(--found);outline-offset:2px}
+.ddp{position:absolute;top:calc(100% + 6px);left:0;z-index:30;min-width:230px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px;box-shadow:0 8px 24px rgba(10,20,40,.18);display:flex;flex-direction:column;gap:2px}
+.ddp label{display:flex;gap:10px;align-items:center;padding:7px 8px;border-radius:6px;cursor:pointer;font-size:13.5px}
+.ddp label:hover{background:var(--head)}
+.ddp input{width:16px;height:16px;accent-color:var(--found)}
+.ddp .clr{margin-top:4px;border:0;border-top:1px solid var(--line);background:none;color:var(--ink2);font:600 12.5px var(--font);padding:9px 8px 4px;text-align:left;cursor:pointer}
 .mine{font-size:13px;color:var(--ink2);min-height:19px}
 .mine b{font-family:var(--mono);font-weight:500;color:var(--ink)}
 .ctl{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:flex-end}
@@ -94,6 +98,13 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
 
 
 <div class="wrap">
+  <div class="who">
+    <div class="dd" id="dd">
+      <button type="button" id="ddb" aria-haspopup="true" aria-expanded="false">View by person: <b id="ddl">All</b> <span aria-hidden="true">▾</span></button>
+      <div class="ddp" id="ddp" hidden></div>
+    </div>
+    <div class="mine" id="mine" aria-live="polite"></div>
+  </div>
   <div class="top">
     <div>
       <h1>Post Development Go Live Readiness Tracker</h1>
@@ -109,8 +120,6 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
     <span><i style="background:var(--mig)"></i>Data migration</span>
     <span style="color:var(--mig)">⚠ Dependency alert</span>
   </div>
-
-  <div class="who"><span class="wl">View by person</span><div class="chips" id="chips" role="group" aria-label="Filter by person"></div><div class="mine" id="mine" aria-live="polite"></div></div>
 
   <div class="chart" id="chart" role="region" aria-label="Gantt chart" tabindex="0"></div>
 
@@ -237,7 +246,7 @@ const groups=[
    {n:"Events app",o:['Vignesh'],s:6,d:3,t:'D',ch:["Events TL", "Events Head", "Events Manager", "Events Vertical SPOC"]}]}]}
 ];
 const END=Math.max(...groups.flatMap(g=>g.rows.map(r=>r.s+r.d)));
-const openSet=new Set();let sel='All';
+const openSet=new Set();const selSet=new Set();
 const $=id=>document.getElementById(id);
 const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DL='SMTWTFS';
 const fmt=d=>d.getDate()+' '+M[d.getMonth()];
@@ -283,7 +292,7 @@ function build(){
       :`<span class="nm" style="${sub==2?'padding-left:48px;font-family:var(--mono);font-size:12px;color:var(--ink2);font-weight:400':sub?'padding-left:18px;color:var(--ink2);font-weight:400':''}">${r.n}${r.al?` <span class="al" title="${r.al}">⚠ ${r.al}</span>`:''}</span>`;
     h+=`<div class="c lab">${nm}<span class="own">${r.o.join(', ')}</span></div><div class="c tl">${bgc}${sub==2?bar2(r):bar(r)}</div>`;
   };
-  const mine=o=>sel==='All'||o.includes(sel);
+  const mine=o=>selSet.size===0||o.some(x=>selSet.has(x));
   groups.forEach(g=>{
     const rows=g.rows.filter(r=>mine(r.o)||(r.kids&&r.kids.some(k=>mine(k.o))));
     if(!rows.length)return;
@@ -296,9 +305,10 @@ function build(){
   $('chart').innerHTML=h;
   document.querySelectorAll('.tog').forEach(b=>b.onclick=()=>{const i=b.dataset.id;openSet.has(i)?openSet.delete(i):openSet.add(i);build();});
   const items=groups.flatMap(g=>g.rows.flatMap(r=>(r.parent&&!r.agg)?r.kids:[r])).filter(x=>mine(x.o));
-  if(sel==='All')$('mine').innerHTML=`Showing everyone. Pick a name to see only that person's items.`;
+  const who=[...selSet].sort().join(', ');
+  if(!selSet.size)$('mine').innerHTML=`Showing everyone. Tick one or more names to see only their items.`;
   else if(items.length){const a=Math.min(...items.map(x=>x.s)),b=Math.max(...items.map(x=>x.s+x.d))-1;
-    $('mine').innerHTML=`<b>${sel}</b>: ${items.length} items, ${items.reduce((t,x)=>t+x.d,0)} working days, ${fmt(cols[idx(a)].d)} to ${fmt(cols[idx(b)].d)}`;}
+    $('mine').innerHTML=`<b>${who}</b>: ${items.length} items, ${items.reduce((t,x)=>t+x.d,0)} working days, ${fmt(cols[idx(a)].d)} to ${fmt(cols[idx(b)].d)}`;}
   const lastD=wd[END-1],firstD=wd[0];
   const cal=Math.round((lastD-firstD)/864e5)+1;
   $('stats').innerHTML=`<div class="stat"><b>${END}</b><span>Working days</span></div><div class="stat"><b>${cal}</b><span>Calendar days</span></div><div class="stat"><b>${fmt(lastD)}</b><span>Go-live ready</span></div>`;
@@ -307,10 +317,16 @@ function chips(){
   const ppl=new Set();
   const add=r=>{r.o.forEach(x=>ppl.add(x));(r.kids||[]).forEach(add)};
   groups.forEach(g=>g.rows.forEach(add));
-  const list=['All',...[...ppl].sort()];
-  $('chips').innerHTML=list.map(x=>`<button type="button" aria-pressed="${x===sel}">${x}</button>`).join('');
-  $('chips').querySelectorAll('button').forEach(b=>b.onclick=()=>{sel=b.textContent;chips();build();});
+  const list=[...ppl].sort();
+  $('ddp').innerHTML=list.map(x=>`<label><input type="checkbox" value="${x}" ${selSet.has(x)?'checked':''}>${x}</label>`).join('')+`<button type="button" class="clr">Clear, show everyone</button>`;
+  $('ddl').textContent=selSet.size?[...selSet].sort().join(', '):'All';
+  $('ddp').querySelectorAll('input').forEach(i=>i.onchange=()=>{i.checked?selSet.add(i.value):selSet.delete(i.value);chips();build();});
+  $('ddp').querySelector('.clr').onclick=()=>{selSet.clear();chips();build();};
 }
+const ddOpen=v=>{$('ddp').hidden=!v;$('ddb').setAttribute('aria-expanded',v)};
+$('ddb').onclick=e=>{e.stopPropagation();ddOpen($('ddp').hidden)};
+document.addEventListener('click',e=>{if(!$('dd').contains(e.target))ddOpen(false)});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')ddOpen(false)});
 function load(){
   const m={};
   groups.forEach(g=>g.rows.forEach(r=>{
