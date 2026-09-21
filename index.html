@@ -104,6 +104,9 @@ h1{font-size:clamp(24px,4vw,34px);line-height:1.1;margin:0;letter-spacing:-.02em
 .ad td{padding:4px 8px}
 .ad button{border:0;background:none;color:var(--found);font:600 12.5px var(--font);cursor:pointer;padding:6px 4px}
 .hint{color:var(--ink3);font-size:12px;margin:10px 0 0;max-width:80ch}
+.cm{flex:none;font:600 11px var(--font);color:var(--found);text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap}
+.cm:hover{background:var(--head)}
+.cm:focus-visible{outline:2px solid var(--found);outline-offset:2px}
 .ctl{display:flex;flex-wrap:wrap;gap:14px 24px;align-items:center;justify-content:flex-end}
 .ch{display:block;font-size:11px;font-weight:400;color:var(--ink3);line-height:1.35;margin-top:2px;font-family:var(--mono)}
 .seg{display:inline-flex;background:var(--head);border-radius:9px;padding:3px}
@@ -181,7 +184,7 @@ h2{font-size:15px;margin:0 0 10px;letter-spacing:-.005em}
       <input type="password" id="tok" placeholder="Fine-grained token, Contents: read and write on this repo only" autocomplete="off">
       <button type="button" id="bTok">Use token</button>
     </div>
-    <div class="tw"><table class="lt"><thead><tr><th>#</th><th>Activity</th><th>Owner(s)</th><th>Type</th><th>Start day</th><th>Days</th><th>Start</th><th>End</th><th>Notes</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
+    <div class="tw"><table class="lt"><thead><tr><th>#</th><th>Activity</th><th>Owner(s)</th><th>Type</th><th>Start day</th><th>Days</th><th>Start</th><th>End</th><th>Notes</th><th>Comment</th><th></th></tr></thead><tbody id="list"></tbody></table></div>
     <p class="hint">Edits update the chart straight away. Nothing is shared until you press Save to GitHub, which commits plan.json for everyone. Owners are separated by commas; start day counts working days from the start date.</p>
   </div>
 
@@ -351,12 +354,13 @@ function build(){
     let nm=r.parent?`<button type="button" class="tog" data-id="${r.id}" aria-expanded="${op}"><span class="chev">${op?'▼':'▶'}</span><span class="nm">${r.n} <span style="color:var(--ink3);font-weight:400">${r.sub}</span>${r.pal?`<span class="al">⚠ ${r.pal}</span>`:''}</span></button>`
       :r.ch?`<button type="button" class="tog" data-id="${r.n}" aria-expanded="${openSet.has(r.n)}" style="padding-left:18px"><span class="chev">${openSet.has(r.n)?'▼':'▶'}</span><span class="nm" style="color:var(--ink2);font-weight:400">${r.n} <span style="color:var(--ink3)">· ${r.ch.length}</span>${r.al?`<span class="al">⚠ ${r.al}</span>`:''}${openSet.has(r.n)&&r.chn?`<span class="ch">${r.chn}</span>`:''}</span></button>`
       :`<span class="nm" style="${sub==2?'padding-left:48px;font-family:var(--mono);font-size:12px;color:var(--ink2);font-weight:400':sub?'padding-left:18px;color:var(--ink2);font-weight:400':''}">${r.n}${r.al?` <span class="al" title="${r.al}">⚠ ${r.al}</span>`:''}</span>`;
-    h+=`<div class="c lab">${nm}<span class="own">${r.o.join(', ')}</span></div><div class="c tl">${bgc}${sub==2?bar2(r):bar(r)}</div>`;
+    h+=`<div class="c lab">${nm}<span class="own">${r.o.join(', ')}</span><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,fmt(cols[idx(r.s)].d),fmt(cols[idx(r.s+r.d-1)].d))}" aria-label="Comment on ${esc(r.n)}">Comment</a></div><div class="c tl">${bgc}${sub==2?bar2(r):bar(r)}</div>`;
   };
   const mine=o=>selSet.size===0||o.some(x=>selSet.has(x));
   groups.forEach(g=>{
     const rows=g.rows.filter(r=>mine(r.o)||(r.kids&&r.kids.some(k=>mine(k.o))));
     if(!rows.length)return;
+    curG=g.g;
     h+=`<div class="c lab grp">${g.g}</div><div class="c tl grp">${bgc}</div>`;
     rows.forEach(r=>{row(r,0);if(r.parent&&openSet.has(r.id))r.kids.filter(k=>mine(k.o)).forEach(k=>{row(k,1);if(k.ch&&openSet.has(k.n))k.ch.forEach(c=>row({n:c,o:k.o,s:k.s,d:k.d,t:k.t},2));});});
   });
@@ -399,6 +403,8 @@ function load(){
 }
 $('start').onchange=()=>build();
 let rt;addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(build,150)});
+let curG='';
+const issueUrl=(r,g,st,en)=>'https://github.com/jagannathvarma/XOS/issues/new?title='+encodeURIComponent('Comment: '+r.n)+'&body='+encodeURIComponent('Activity: '+r.n+'\nGroup: '+g+'\nOwner(s): '+r.o.join(', ')+'\nPlanned: '+st+' to '+en+'\n\nMy comment:\n');
 const TYPES={F:'Foundational',I:'Independent',D:'Dependent',M:'Data migration'},DN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const esc=x=>String(x).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
 const obj=(g,r,k)=>{const R=groups[g].rows[r];return k>=0?R.kids[k]:R};
@@ -415,6 +421,7 @@ function rowHtml(r,g,ri,k,num,dt){
 <td><input type="number" min="1" ${a} data-f="d" class="w-num" value="${r.d}" aria-label="Days"></td>
 <td class="dt" data-c="s">${dt(r.s)}</td><td class="dt" data-c="e">${dt(r.s+r.d-1)}</td>
 <td><input ${a} data-f="note" class="w-note" value="${esc(r.note||r.al||r.pal||'')}" aria-label="Notes"></td>
+<td><a class="cm" target="_blank" rel="noopener" href="${issueUrl(r,curG,dt(r.s),dt(r.s+r.d-1))}">Comment</a></td>
 <td><button type="button" class="x" ${a} data-del aria-label="Delete row" title="Delete">×</button></td></tr>`;
 }
 function dtFn(){calcEnd();const wd=workDates(END);return i=>{const d=wd[i];return d?DN[d.getDay()]+' '+fmt(d):'-'}}
@@ -423,12 +430,13 @@ function renderList(){
   groups.forEach((g,gi)=>{
     const rows=g.rows.map((r,ri)=>({r,ri})).filter(x=>mineO(x.r.o)||(x.r.kids&&x.r.kids.some(k=>mineO(k.o))));
     if(!rows.length)return;
-    h+=`<tr class="gr"><td colspan="10">${g.g}</td></tr>`;
+    curG=g.g;
+    h+=`<tr class="gr"><td colspan="11">${g.g}</td></tr>`;
     rows.forEach(({r,ri})=>{n++;h+=rowHtml(r,gi,ri,-1,n,dt);
       (r.kids||[]).forEach((k,ki)=>{if(mineO(k.o))h+=rowHtml(k,gi,ri,ki,n+'.'+(ki+1),dt)});});
-    h+=`<tr class="ad"><td colspan="10"><button type="button" data-add="${gi}">+ Add task to ${g.g}</button></td></tr>`;
+    h+=`<tr class="ad"><td colspan="11"><button type="button" data-add="${gi}">+ Add task to ${g.g}</button></td></tr>`;
   });
-  $('list').innerHTML=h||'<tr><td colspan="10" style="padding:16px">No items for the selected people.</td></tr>';
+  $('list').innerHTML=h||'<tr><td colspan="11" style="padding:16px">No items for the selected people.</td></tr>';
 }
 function updateDates(){
   const dt=dtFn();
